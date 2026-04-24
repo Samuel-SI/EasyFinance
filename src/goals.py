@@ -1,38 +1,30 @@
-class GoalManager:
-    def __init__(self):
-        self.meta_mensal = 0.0
+# src/goals.py
 
-    def configurar_meta(self):
-        try:
-            print("\n" + "="*30)
-            print("  CONFIGURAR META MENSAL")
-            print("="*30)
-            valor = float(input("Qual o seu objetivo de faturamento para este mês? R$ "))
-            if valor < 0:
-                print("A meta deve ser um valor positivo.")
-                return
-            self.meta_mensal = valor
-            print(f"Meta de R$ {valor:.2f} gravada com sucesso!")
-        except ValueError:
-            print("Erro: Introduza um valor numérico válido.")
+# src/goals.py
 
-    def calcular_progresso(self, total_entradas):
-        if self.meta_mensal <= 0:
-            return "Nenhuma meta definida. Vá a 'Gestão de Metas' para começar."
+def gerenciar_metas():
+    while True:
+        print("\n" + "-"*10 + " ABA DE METAS " + "-"*10)
+        print("1 - Criar Nova Meta")
+        print("2 - Ver Minhas Metas")
+        print("0 - Voltar ao Menu Principal")
+        print("-"*34)
         
-        percentagem = (total_entradas / self.meta_mensal) * 100
-        
-        # Feedback visual conforme o progresso
-        barra = "█" * int(percentagem // 10) + "░" * (10 - int(percentagem // 10))
-        
-        print(f"\n--- PROGRESSO DA META ---")
-        print(f"Objetivo: R$ {self.meta_mensal:.2f}")
-        print(f"Alcançado: R$ {total_entradas:.2f}")
-        print(f"[{barra}] {percentagem:.1f}%")
-        
-        if percentagem >= 100:
-            return "🏆 Parabéns! Superou a sua meta mensal!"
-        elif percentagem >= 75:
-            return "🚀 Quase lá! Mantenha o foco nas vendas."
+        escolha = input("Escolha uma opção: ")
+
+        if escolha == "1":
+            print("\n--- CRIAR NOVA META ---")
+            nome_meta = input("Qual o seu objetivo? (ex: Viagem): ")
+            valor_meta = input("Quanto precisa poupar? R$ ")
+            print(f"✅ Meta '{nome_meta}' registada!")
+            
+        elif escolha == "2":
+            print("\n--- MINHAS METAS ---")
+            print("Ainda não tens metas guardadas.") # Futuramente lerás do arquivo
+            
+        elif escolha == "0":
+            print("A sair da Aba de Metas...")
+            break # Este 'break' faz o programa sair do loop e voltar para o main.py
+            
         else:
-            return "📉 Continue a registar e a focar no crescimento."
+            print("⚠️ Opção inválida! Tenta novamente.")

@@ -1,23 +1,24 @@
+# src/Courses.py
 import webbrowser
+def exibir_cursos():
+    while True:
+        print("\n" + "="*10 + " ABA DE CURSOS (RF010) " + "="*10)
+        print("1 - Curso: Educação Financeira Básica")
+        print("2 - Curso: Como sair das dívidas")
+        print("3 - Curso: Investimentos para Iniciantes")
+        print("0 - Voltar ao Menu Principal")
+        print("="*43)
 
-class CourseManager:
-    def __init__(self):
-        self.cursos = [
-            {"id": 1, "titulo": "Separação de Contas (PF vs PJ)", "link": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"},
-            {"id": 2, "titulo": "Fluxo de Caixa para Iniciantes", "link": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"},
-            {"id": 3, "titulo": "Como precificar seu produto", "link": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"}
-        ]
+        escolha = input("Escolha um curso para ver detalhes: ")
 
-    def exibir_aba(self):
-        print("\n" + "="*40)
-        print("   EDUCAÇÃO FINANCEIRA - EASYFINANCE   ")
-        print("="*40)
-        for c in self.cursos:
-            print(f"[{c['id']}] {c['titulo']}")
-        
-        op = input("\nSelecione um curso para abrir ou '0' para voltar: ")
-        if op.isdigit() and int(op) > 0:
-            curso = next((c for c in self.cursos if c['id'] == int(op)), None)
-            if curso:
-                print(f"Abrindo curso: {curso['titulo']}...")
-                webbrowser.open(curso['link'])
+        if escolha == "1":
+            print("\n[Detalhes] Aprenda a organizar seu orçamento mensal do zero.")
+        elif escolha == "2":
+            print("\n[Detalhes] Estratégias para negociar juros e quitar boletos.")
+        elif escolha == "3":
+            print("\n[Detalhes] O que é Selic, CDB e como começar a investir.")
+        elif escolha == "0":
+            print("Saindo da Aba de Cursos...")
+            break
+        else:
+            print("⚠️ Opção inválida!")

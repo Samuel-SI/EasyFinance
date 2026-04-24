@@ -1,173 +1,103 @@
+# main.py
 import sys
-from database import Database
-from validators import Validator
-from finance_engine import FinanceEngine
-from courses import CourseManager
-from goals import GoalManager
+import os
 
-class EasyFinance:
-    def __init__(self):
-        # Inicialização dos dados e módulos
-        self.dados = Database.carregar()
-        self.usuario_logado = None
-        self.course_manager = CourseManager()
-        self.goal_manager = GoalManager()
+# Esse comando ajuda o Python a encontrar a pasta 'src' se ele se perder
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'src')))
 
-    def menu_inicial(self):
-        while True:
-            print("\n" + "="*40)
-            print("     EASYFINANCE | Samuel & Richar     ")
-            print("="*40)
-            print("1. Cadastrar Novo Usuário")
-            print("2. Login")
-            print("0. Sair")
-            op = input("Escolha uma opção: ")
+from src.validators import realizar_cadastro
+from src.finance_engine import exibir_menu_financas, exibir_alertas, exibir_diagnostico, gerar_relatorio_mensal
+from src.Courses import exibir_cursos
+from src.goals import gerenciar_metas
+from src.database import salvar_dados, carregar_dados, salvar_valores_financeiros, carregar_valores_financeiros
 
-            if op == "1": 
-                self.tela_cadastro()
-            elif op == "2": 
-                self.tela_login()
-            elif op == "0": 
-                print("Encerrando sistema... Até logo!")
-                sys.exit()
-            else:
-                print("Opção inválida. Tente novamente.")
+# Carregar dados existentes ao iniciar
+lista_emails = carregar_dados('emails.txt')
+lista_senhas = carregar_dados('senhas.txt')
+lista_documentos = carregar_dados('documentos.txt')
+valores_entradas = carregar_valores_financeiros('entradas.txt')
+valores_saidas = carregar_valores_financeiros('saidas.txt')
 
-    def tela_cadastro(self):
-        print("\n--- NOVO CADASTRO ---")
+def menu_principal():
+    while True:
+        print("\n" + "="*30)
+        print("      EASY FINANCE - HOME")
+        print("="*30)
+        print("1 - Registrar Entrada/Saída")
+        print("2 - Alertas de Vencimento")
+        print("3 - Diagnóstico Financeiro")
+        print("4 - Relatórios Mensais")
+        print("5 - Aba de Cursos")
+        print("6 - Aba de Metas")
+        print("0 - Encerrar Sessão (Logout)")
+        print("="*30)
+
+        escolha = input("Escolha uma opção: ")
+
+        if escolha == "1":
+            exibir_menu_financas() # Chama a página de finanças
+        elif escolha == "2":
+            exibir_alertas() # Chama a página de alertas
+        elif escolha == "3":
+           exibir_diagnostico() # Chama a página de diagnóstico
+        elif escolha == "4":
+             gerar_relatorio_mensal() # Chama a página de relatórios
+        elif escolha == "5":
+           exibir_cursos() # Chama a página de cursos
+        elif escolha == "6":
+            gerenciar_metas() # Chama a página de metas
+        elif escolha == "0":
+            print("\nSessão encerrada!")
+            break # Sai do menu principal e volta para o menu de Login/Cadastro
+        else:
+            print("\nOpção inválida!")
+
+def fazer_login():
+    print("\n==== TELA DE LOGIN ====")
+    if not lista_emails:
+        print("⚠️ Nenhum usuário cadastrado.")
+        return False
+    
+    email_login = input("E-mail: ")
+    senha_login = input("Senha: ")
+
+    if email_login in lista_emails:
+        indice = lista_emails.index(email_login)
+        if senha_login == lista_senhas[indice]:
+            print(f"✅ Login realizado com sucesso!")
+            return True
+        else:
+            print("❌ Senha incorreta!")
+    else:
+        print("❌ Usuário não encontrado!")
+    return False
+
+# --- MENU ---
+while True:
+    print("\n=== EASY FINANCE ===")
+    print("1 - Login")
+    print("2 - Cadastro")
+    print("0 - Sair")
+    
+    opcao = input("Escolha uma opção: ")
+
+    if opcao == "1":
+        if fazer_login():
+            menu_principal()
+    elif opcao == "2":
+        e, s, d = realizar_cadastro(lista_emails, lista_documentos)
+        lista_emails.append(e)
+        lista_senhas.append(s)
+        lista_documentos.append(d)
         
-        # RF001: Validação de E-mail
-        email = input("E-mail: ")
-        val, msg = Validator.validar_email(email, self.dados['usuarios'])
-        if not val:
-            print(f"❌ {msg}")
-            return
-
-        # RF002: Validação de Senha e Confirmação
-        senha = input("Senha (4-8 dígitos, 1 maiúscula, 1 número): ")
-        conf = input("Confirme a senha: ")
-        val, msg = Validator.validar_senha(senha, conf)
-        if not val:
-            print(f"❌ {msg}")
-            return
-
-        # RF002: Validação de CPF/CNPJ
-        doc = input("CPF/CNPJ (XX.XXX.XXX/0001-XX): ")
-        val, msg = Validator.validar_cpf_cnpj(doc, self.dados['usuarios'])
-        if not val:
-            print(f"❌ {msg}")
-            return
-
-        # Salvamento no banco de dados (RF008)
-        self.dados['usuarios'].append({
-            "email": email, 
-            "senha": senha, 
-            "documento": doc
-        })
-        Database.salvar(self.dados)
-        print("✅ Usuário cadastrado com sucesso!")
-
-    def tela_login(self):
-        print("\n--- ACESSO AO SISTEMA ---")
-        email = input("E-mail: ")
-        senha = input("Senha: ")
+        # SALVAR NO ARQUIVO AGORA
+        salvar_dados('emails.txt', lista_emails)
+        salvar_dados('senhas.txt', lista_senhas)
+        salvar_dados('documentos.txt', lista_documentos)
+        print("✅ Cadastro finalizado!")
         
-        for u in self.dados['usuarios']:
-            if u['email'] == email and u['senha'] == senha:
-                self.usuario_logado = email
-                print(f"✅ Bem-vindo, {email}!")
-                self.menu_principal()
-                return
-        
-        print("❌ E-mail ou senha incorretos.")
-
-    def menu_principal(self):
-        while self.usuario_logado:
-            # Cálculos em tempo real para o Dashboard
-            saldo = FinanceEngine.calcular_saldo(self.usuario_logado, self.dados['transacoes'])
-            
-            # Soma apenas as entradas para o GoalManager
-            entradas_totais = sum(t['valor'] for t in self.dados['transacoes'] 
-                                 if t['user_email'] == self.usuario_logado and t['tipo'] == 'Entrada')
-
-            print("\n" + "—"*40)
-            print(f" EASYFINANCE DASHBOARD | Usuário: {self.usuario_logado}")
-            print(f" SALDO ATUAL: R$ {saldo:.2f}")
-            print("—"*40)
-            print("1. Registrar Entrada/Saída")
-            print("2. Ver Diagnóstico de Saúde Financeira")
-            print("3. Gestão de Metas de Faturamento")
-            print("4. Aba de Cursos (Educação Financeira)")
-            print("5. Sair (Logoff)")
-            
-            op = input("\nSelecione uma funcionalidade: ")
-
-            if op == "1":
-                self.registrar_movimento(saldo)
-            elif op == "2":
-                # RF007: Diagnóstico Semanal
-                print(f"\n{FinanceEngine.gerar_diagnostico(self.usuario_logado, self.dados['transacoes'])}")
-            elif op == "3":
-                # Nova Funcionalidade de Metas
-                print(self.goal_manager.calcular_progresso(entradas_totais))
-                if input("\nDeseja ajustar sua meta mensal? (S/N): ").upper() == "S":
-                    self.goal_manager.configurar_meta()
-            elif op == "4":
-                self.course_manager.exibir_aba()
-            elif op == "5":
-                # RF009: Encerrar sessão com confirmação
-                if input("Deseja realmente sair? (S/N): ").upper() == "S":
-                    print("Limpando sessão...")
-                    self.usuario_logado = None
-            else:
-                print("Opção inválida.")
-
-    def registrar_movimento(self, saldo_atual):
-        print("\n--- REGISTRAR MOVIMENTAÇÃO ---")
-        tipo_op = input("1. Entrada (+) / 2. Saída (-): ")
-        tipo = "Entrada" if tipo_op == "1" else "Saída"
-        
-        try:
-            valor = float(input("Valor (R$): "))
-            if valor <= 0:
-                print("❌ O valor deve ser maior que zero.")
-                return
-
-            # RF003: Alerta de saldo negativo
-            if tipo == "Saída" and valor > saldo_atual:
-                print(f"⚠️ ATENÇÃO: Esta operação deixará seu saldo negativo (R$ {saldo_atual - valor:.2f}).")
-                if input("Deseja continuar assim mesmo? (S/N): ").upper() != "S":
-                    print("Operação cancelada.")
-                    return
-
-            # RF004: Validação de data (não permite data futura)
-            data_input = input("Data (DD/MM/AAAA): ")
-            val_data, data_obj = Validator.validar_data(data_input)
-            if not val_data:
-                print(f"❌ {data_obj}")
-                return
-
-            desc = input("Descrição/Categoria (Ex: Aluguel, Venda de Produto): ")
-            if not desc:
-                print("❌ A descrição não pode ficar vazia.")
-                return
-
-            # Registro e Persistência (RF008)
-            nova_transacao = {
-                "user_email": self.usuario_logado,
-                "tipo": tipo,
-                "valor": valor,
-                "data": data_obj.strftime("%d/%m/%Y"),
-                "desc": desc
-            }
-            
-            self.dados['transacoes'].append(nova_transacao)
-            Database.salvar(self.dados)
-            print("✅ Registro salvo com sucesso!")
-
-        except ValueError:
-            print("❌ Erro: Insira um valor numérico válido.")
-
-if __name__ == "__main__":
-    app = EasyFinance()
-    app.menu_inicial()
+    elif opcao == "0":
+        print("Saindo...")
+        break
+    else:
+        print("Opção inválida!")

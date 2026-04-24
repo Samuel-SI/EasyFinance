@@ -1,47 +1,66 @@
-import re
-from datetime import datetime
+# src/validators.py
 
-class Validator:
-    @staticmethod
-    def validar_email(email, usuarios):
-        # RF001: .com, @, sem espaços, domínios específicos
-        padrao = r'^[a-zA-Z0-9_.+-]+@(gmail|ufrpe)\.com$'
-        if not re.match(padrao, email):
-            return False, "E-mail inválido! Use domínios @ufrpe ou @gmail (.com)."
-        if any(u['email'] == email for u in usuarios):
-            return False, "Este e-mail já está cadastrado no sistema."
-        return True, ""
+def realizar_cadastro(emails_cadastrados, cpfs_cadastrados):
+    while True:
+        print("\n==== TELA DE CADASTRO ====")
+        email = input("Digite o seu e-mail (ex: usuário@gmail.com): ")
 
-    @staticmethod
-    def validar_senha(senha, confirmacao):
-        # RF002: 4-8 caracteres, 1 número, 1 maiúscula
-        if not (4 <= len(senha) <= 8):
-            return False, "A senha deve ter entre 4 e 8 caracteres."
-        if not any(c.isdigit() for c in senha):
-            return False, "A senha deve conter pelo menos um número."
-        if not any(c.isupper() for c in senha):
-            return False, "A senha deve conter pelo menos uma letra maiúscula."
-        if senha != confirmacao:
-            return False, "A senha e a confirmação não coincidem."
-        return True, ""
+        if " " in email:
+            print("ERRO: Não coloque espaços em branco no e-mail.")
+            continue
+        if "@" not in email or ".com" not in email:
+            print("ERRO: Seu e-mail precisa ter '@' e '.com' ! ")
+            continue
+        if not "gmail" in email:
+            print("ERRO: Seu e-mail precisa apresentar 'gmail' !")
+            continue
+        if email in emails_cadastrados:
+            print("Esse e-mail já foi cadastrado!")
+            continue
+        print("E-mail validado!")
+        break
 
-    @staticmethod
-    def validar_cpf_cnpj(doc, usuarios):
-        # RF002: Estrutura XX.XXX.XXX/0001-XX
-        padrao = r'^\d{2}\.\d{3}\.\d{3}/0001-\d{2}$'
-        if not re.match(padrao, doc):
-            return False, "Formato inválido! Use o padrão XX.XXX.XXX/0001-XX."
-        if any(u['documento'] == doc for u in usuarios):
-            return False, "Este CPF/CNPJ já está vinculado a outra conta."
-        return True, ""
+    while True:
+        senha = input("Digite a senha (ex: Senhausuario1234): ")
+        if len(senha) < 7 or len(senha) > 16:
+            print("ERRO: Sua senha deve ter de 7 até 16 caracteres!")
+            continue 
 
-    @staticmethod
-    def validar_data(data_str):
-        # RF004: Impedir data futura
-        try:
-            data_dt = datetime.strptime(data_str, "%d/%m/%Y")
-            if data_dt > datetime.now():
-                return False, "Erro: Não é permitido registrar movimentações com datas futuras."
-            return True, data_dt
-        except ValueError:
-            return False, "Formato de data inválido. Use DD/MM/AAAA."
+        ha_numero = False 
+        letra_grande = False
+        for digito in senha:
+            if digito.isdigit():
+                ha_numero = True
+        if not ha_numero:
+            print("ERRO: Sua senha deve conter, ao menos, um número!")
+            continue 
+
+        for letra in senha: 
+            if letra.isupper(): 
+                letra_grande = True
+        if not letra_grande: 
+            print("ERRO: Sua senha deve conter, ao menos, uma letra maiúscula!")
+            continue
+
+        confirmacao = input("Confirme sua senha: ")
+        if confirmacao != senha:
+            print("ERRO: Senha e Confirmação de Senha não coincidem.")
+            continue   
+        print("Senha validada!")
+        break
+
+    while True:
+        cpf_cnpj = input("Digite seu CPF/CNPJ: ")
+        if not cpf_cnpj.isdigit():
+            print("ERRO: Digite apenas números.")
+            continue
+        if len(cpf_cnpj) != 11 and len(cpf_cnpj) != 14:
+            print("ERRO: Quantidade de dígitos incorreta.")
+            continue
+        if cpf_cnpj in cpfs_cadastrados:
+            print("Esse CPF/CNPJ já está cadastrado.")
+            continue
+        print("CPF/CNPJ validado!")
+        break
+
+    return email, senha, cpf_cnpj
