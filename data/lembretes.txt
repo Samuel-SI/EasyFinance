@@ -1,2 +1,6 @@
-{'conta': 'Financiamento ferrari', 'data': '31/05/2026'}
-{'conta': 'Casa própria', 'data': '28/04/2026'}
+Financiamento ferrari,31/05/2026
+Casa própria,28/04/2026
+Contas do mês,30/04/2026
+Contas do mês,30/04/2026
+Comprar um carrão,31/05/2026
+Contas do mês,30/04/2026

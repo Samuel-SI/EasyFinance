@@ -67,12 +67,9 @@ def registrar_transacao(lista_entradas, lista_saidas):
 
 # src/finance_engine.py
 
+from datetime import datetime
+
 def exibir_alertas(lembretes):
-    """
-    Gerencia o vencimento de contas.
-    Calcula a diferença entre a data atual e a data de vencimento
-    para definir o nível de urgência (Sistema de Cores/Status).
-    """
     while True:
         print("\n" + "!"*10 + " GESTÃO DE VENCIMENTOS " + "!"*10)
         print("1 - Visualizar Lembretes (Urgência)")
@@ -87,39 +84,40 @@ def exibir_alertas(lembretes):
                 print("✅ Tudo em dia! Nenhum lembrete cadastrado.")
             else:
                 hoje = datetime.now()
-                for item in lembretes: 
-                    nome_conta = item['conta']
-                    data_string = item['data']
-                    # Converte string (DD/MM/AAAA) para objeto datetime para permitir cálculos
-                    data_venc = datetime.strptime(data_string, "%d/%m/%Y")
-                    # Calcula a diferença em dias
-                    dias_restantes = (data_venc - hoje).days + 1
+                for item in lembretes:
+                    # Trava de segurança para garantir que é um dicionário
+                    if isinstance(item, dict):
+                        # Transforma o texto da data em uma data real para o Python calcular
+                        data_venc = datetime.strptime(item['data'], "%d/%m/%Y")
+                        diferenca = data_venc - hoje
+                        dias_restantes = diferenca.days + 1
 
-                    # Lógica de classificação de urgência
-                    if dias_restantes > 10:
-                        status = "🟢 [LONGO PRAZO]"
-                    elif 3 < dias_restantes <= 10:
-                        status = "🟢 [SEM URGÊNCIA - 10 DIAS]"
-                    elif 1 < dias_restantes <= 3:
-                        status = "🟡 [ATENÇÃO - 3 DIAS]"
-                    elif 0 <= dias_restantes <= 1:
-                        status = "🔴 [ALERTA MÁXIMO - 24 HORAS]"
-                    else:
-                        status = "⚪ [VENCIDO]"
+                        # Lógica das cores e dias dinâmicos
+                        if dias_restantes > 10:
+                            status = "🟢 [LONGO PRAZO]"
+                        elif 3 < dias_restantes <= 10:
+                            status = f"🟢 [SEM URGÊNCIA - {dias_restantes} DIAS]"
+                        elif 1 < dias_restantes <= 3:
+                            status = f"🟡 [ATENÇÃO - {dias_restantes} DIAS]"
+                        elif 0 <= dias_restantes <= 1:
+                            status = "🔴 [ALERTA MÁXIMO - VENCE EM 24H]"
+                        else:
+                            status = f"⚪ [VENCIDO HÁ {abs(dias_restantes)} DIAS]"
 
-                    print(f"{status} {item['conta']} | Vence em: {item['data']} (Faltam {dias_restantes} dias)")
+                        print(f"{status} {item['conta']} | Vencimento: {item['data']}")
             input("\nPressione Enter para continuar...")
 
         elif escolha == "2":
-            conta = input("Nome da conta/boleto: ")
-            data_str = input("Data de vencimento (DD/MM/AAAA): ")
+            conta = input("Nome da conta: ")
+            data_str = input("Vencimento (DD/MM/AAAA): ")
             try:
-                # Validação de formato: impede que datas inexistentes ou formatos errados travem o programa
+                # Valida se a data foi digitada no formato certo
                 datetime.strptime(data_str, "%d/%m/%Y")
-                lembretes.append({"conta": conta, "data": data_str})
-                print(f"✅ Lembrete para '{conta}' criado!")
+                # GUARDA COMO DICIONÁRIO (O segredo para não dar erro)
+                lembretes.append({'conta': conta, 'data': data_str})
+                print(f"✅ Lembrete para '{conta}' criado com sucesso!")
             except ValueError:
-                print("⚠️ Formato de data inválido! Use DD/MM/AAAA")
+                print("⚠️ Erro: Use o formato DD/MM/AAAA (Ex: 30/04/2026)")
 
         elif escolha == "0":
             break
