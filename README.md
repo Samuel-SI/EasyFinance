@@ -1,6 +1,6 @@
 # 💰 Easy Finance - Gestor Financeiro Pessoal
 
-Sistema de gestão financeira desenvolvido em Python como projeto principal para a Verificação de Aprendizagem (VA). O software foca no controle de fluxo de caixa, planejamento de metas e gestão inteligente de prazos.
+Sistema de gestão financeira desenvolvido em Python como projeto principal para a Verificação de Aprendizagem . O software foca no controle de fluxo de caixa, planejamento de metas e gestão inteligente de prazos.
 
 ## 🚀 Funcionalidades
 
