@@ -1,8 +1,12 @@
 import sys
 import os
 
-# --- CONFIGURAÇÃO DE AMBIENTE ---
-# Adiciona o diretório 'src' ao path do sistema para permitir a importação de módulos internos
+# ==============================================================================
+# CONFIGURAÇÃO DE AMBIENTE E PATH
+# ==============================================================================
+# O código abaixo localiza o diretório 'src' de forma dinâmica, garantindo que
+# o Python encontre os módulos internos independentemente de onde o script é executado.
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'src')))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'src')))
 
@@ -59,8 +63,11 @@ def menu_principal():
             print("💾 Lembretes sincronizados com o banco de dados!")
         
         elif escolha == "3":
-            # Gera análise baseada no histórico e reserva de emergência
-            exibir_diagnostico([1000, 1100], sum(valores_entradas), sum(valores_saidas), 6)
+            # O diagnóstico calcula saúde financeira baseada em entradas vs saídas
+            # Parâmetros: [Reserva Alvo], Total Entradas, Total Saídas, Meses de Cobertura
+            saldo_total = sum(valores_entradas) - sum(valores_saidas)
+            historico_real = [1000, saldo_total]
+            exibir_diagnostico(historico_real, sum(valores_entradas), sum(valores_saidas), 6)
         
         elif escolha == "4":
              gerar_relatorio_mensal(valores_entradas, valores_saidas) # Chama a página de relatórios

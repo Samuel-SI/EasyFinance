@@ -89,4 +89,4 @@ def realizar_cadastro(emails_cadastrados, cpfs_cadastrados):
         break
     
     # Retorna os dados validados para o loop principal
-    return email, senha, cpf_cnpj
+    return email, senha, cpf_cnpj 

@@ -2,30 +2,55 @@ import json
 import os
 import ast
 
+# Responsável por todas as operações de I/O (Input/Output), garantindo que os
+# dados sobrevivam ao fechamento do programa através de arquivos de texto (.txt).
+
 def salvar_dados(nome_arquivo, lista_itens):
+
+    """
+    Salva listas genéricas e dicionários no diretório 'data'.
+    
+    Args:
+        nome_arquivo (str): Nome do arquivo de destino.
+        lista_itens (list): Lista de dados a serem persistidos.
+    """
+    # Garante que o caminho seja relativo à pasta 'data'
     caminho = os.path.join('data', nome_arquivo)
     # Usamos latin-1 para evitar erros com acentos no Windows
     with open(caminho, 'w', encoding='latin-1') as f:
         for item in lista_itens:
+            # Se o item for um dicionário, extrai os valores e os separa por vírgula (CSV manual)
             if isinstance(item, dict):
                 valores = [str(v) for v in item.values()]
                 linha = ",".join(valores)
                 f.write(linha + "\n")
             else:
+                # Caso seja uma string ou número simples, escreve diretamente
                 f.write(str(item) + "\n")
 
 def carregar_dados(nome_arquivo):
+
+    """
+    Lê os dados dos arquivos e reconstrói as estruturas (listas/dicionários).
+    
+    Returns:
+        list: Lista com os dados recuperados ou lista vazia se o arquivo não existir.
+    """
+
     caminho = os.path.join('data', nome_arquivo)
     lista = []
+    # Verificação defensiva: evita erro de 'FileNotFound'
     if not os.path.exists(caminho): return lista
     
     with open(caminho, 'r', encoding='latin-1', errors='ignore') as f:
         for linha in f:
             conteudo = linha.strip()
-            if not conteudo: continue
+            if not conteudo: continue # Pula linhas vazias
             
             try:
-                # Tenta converter a linha se ela estiver salva como {'chave': 'valor'}
+                # LÓGICA DE PARSING (Conversão de texto para objeto)
+                
+                # Caso 1: O dado está em formato literal de dicionário Python
                 if conteudo.startswith('{'):
                     item_convertido = ast.literal_eval(conteudo)
                     lista.append(item_convertido)
