@@ -14,6 +14,7 @@ from src.auth import fazer_login
 from src.validators import realizar_cadastro
 from src.interface import menu_principal
 from src.database import salvar_dados, carregar_dados
+from src.security import verificar_2fa 
   
 # --- INICIALIZAÇÃO DE DADOS (PERSISTÊNCIA) ---
 # Carrega as informações dos arquivos de texto para as listas em memória ao iniciar o programa
@@ -33,7 +34,8 @@ while True:
     if opcao == "1":
         usuario_logado = fazer_login(lista_emails, lista_senhas)
         if usuario_logado:
-            menu_principal(usuario_logado)
+            if verificar_2fa(usuario_logado):
+               menu_principal(usuario_logado)
     elif opcao == "2":
         # Processo de cadastro: recebe dados, armazena em listas e persiste em arquivo
         e, s, d = realizar_cadastro(lista_emails, lista_documentos)
