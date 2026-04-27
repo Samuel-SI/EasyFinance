@@ -2,11 +2,11 @@
 
 Propósito do Projeto: > Criar uma ferramenta prática e segura para quem precisa organizar a vida financeira sem complicação. O foco foi aplicar lógica modular em Python para gerenciar gastos, prazos e metas, garantindo que os dados não se percam e fiquem protegidos.
 
-🛠️ Engenharia do Sistema (O que tem dentro):
+🛠️ Funcionalidades do Sistema:
 
 🛡️ Camada de Segurança (2FA): Sistema de verificação em duas etapas que gera tokens aleatórios para validar o acesso.
 
-📅 Painel de Prazos: Monitoramento automático de datas. O sistema "lê" o calendário do computador e sinaliza contas críticas.
+📅 Painel de Prazos: Monitoramento automático de datas. O sistema lê o calendário do computador e sinaliza contas críticas.
 
 💰 Gestão de Fluxo: Cadastro de entradas e saídas com cálculo de saldo líquido imediato.
 
@@ -17,7 +17,7 @@ Propósito do Projeto: > Criar uma ferramenta prática e segura para quem precis
 🎯 Planejador de Metas: Módulo para registro de objetivos financeiros de curto e longo prazo.
 
 📦 Tecnologias e Bibliotecas
-Para este projeto, foquei em utilizar o poder das bibliotecas nativas do Python 3, garantindo leveza e eficiência:
+Para este projeto, focamos em utilizar as bibliotecas nativas do Python 3, garantindo leveza e eficiência:
 
 datetime → Crucial para a lógica de vencimentos e cálculos de dias restantes.
 
