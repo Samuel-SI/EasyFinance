@@ -5,6 +5,7 @@ __pycache__/
 # Ignorar ficheiros de dados locais para não expor CPFs no GitHub
 data/*.csv
 data/*.db
+data/*.txt
 
 # Ignorar pastas de ambientes virtuais
 venv/
