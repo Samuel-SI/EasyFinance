@@ -66,3 +66,6 @@ Como o projeto utiliza apenas bibliotecas padrão, a instalação é simples:
 ## 👥 Time de Desenvolvimento
 * **Samuel Rocha**
 * **Richard Carmo**
+
+## 🔗 Links Extras
+* [Documentação Complementar (Google Drive)](https://drive.google.com/drive/folders/1wf95DX--Q_ywYsi8r6SW_D9cAkNzfT3J?usp=drive_link)
