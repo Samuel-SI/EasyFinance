@@ -6,7 +6,7 @@ __pycache__/
 data/*.csv
 data/*.db
 data/*.txt
-
+data/*.json
 # Ignorar pastas de ambientes virtuais
 venv/
 .env
