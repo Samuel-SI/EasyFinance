@@ -76,7 +76,7 @@ def exibir_alertas(lembretes):
                             status = f"{WHITE}⚪ [VENCIDO HÁ {abs(dias_restantes)} DIAS]{RESET}"
 
                         print(f"{status} {BOLD}{item['conta']}{RESET} | Vencimento: {item['data']}")
-            input("\n{BOLD}Pressione Enter para continuar...{RESET}")
+            input(f"\n{BOLD}Pressione Enter para continuar...{RESET}")
 
         elif escolha == "2":
             conta = input("Nome da conta: ")
