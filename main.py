@@ -1,10 +1,10 @@
-from src.repository.json_repo import JsonRepository
+from src.repository.sqlite_repo import SqliteRepository
 from src.services.auth_service import AuthService
 from src.services.finance_service import FinanceService
 from src.views.gui_view import GuiView
 
 def main():
-    repo = JsonRepository()
+    repo = SqliteRepository()
     auth_service = AuthService(repo)
     finance_service = FinanceService(repo)
 

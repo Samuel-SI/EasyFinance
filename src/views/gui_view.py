@@ -2,6 +2,8 @@ import customtkinter as ctk
 import webbrowser
 from tkinter import messagebox
 from PIL import Image
+import re
+
 
 class GuiView:
     def __init__(self, auth_service, finance_service):
@@ -35,26 +37,51 @@ class GuiView:
             lbl_logo = ctk.CTkLabel(self.janela, image=imagem_logo, text="")
             lbl_logo.pack(pady=(20, 0))
         except:
-            pass # Caso a logo não seja encontrada, ele continua normalmente
+            pass 
 
         titulo = ctk.CTkLabel(self.janela, text="Bem vindo ao EasyFinance", font=("Roboto", 28, "bold"), text_color=self.COR_PRINCIPAL)
         titulo.pack(pady=(10, 20))
 
-        frame = ctk.CTkFrame(self.janela, width=400, height=350)
+        frame = ctk.CTkFrame(self.janela, width=400, height=400) # Aumentei um pouquinho a altura do frame
         frame.place(relx=0.5, rely=0.55, anchor="center")
         frame.pack_propagate(False)
 
         subtitulo = ctk.CTkLabel(frame, text="Acesse sua Conta Corporativa", font=("Roboto", 14, "bold"))
         subtitulo.pack(pady=(30, 20))
 
-        self.entry_email = ctk.CTkEntry(frame, width=300, height=35, placeholder_text="E-mail do gestor")
+        self.entry_email = ctk.CTkEntry(frame, width=300, height=35, placeholder_text="Digite seu email:")
         self.entry_email.pack(pady=10)
 
-        self.entry_senha = ctk.CTkEntry(frame, width=300, height=35, placeholder_text="Senha de acesso", show="*")
+        self.entry_senha = ctk.CTkEntry(frame, width=300, height=35, placeholder_text="Digite sua senha:", show="*")
         self.entry_senha.pack(pady=10)
 
+        self.check_mostrar_senha = ctk.CTkCheckBox(
+            frame, # <-- CORREÇÃO AQUI: mudamos para 'frame'
+            text="Mostrar Senha", 
+            command=self.toggle_senha, 
+            font=("Roboto", 12)
+        )
+        self.check_mostrar_senha.pack(pady=5)
+
         btn_entrar = ctk.CTkButton(frame, width=300, height=40, text="Entrar no sistema", command=self.processar_login)
-        btn_entrar.pack(pady=25)
+        btn_entrar.pack(pady=(25, 15))
+
+        # NOVO BOTÃO DE CADASTRO
+        btn_cadastrar = ctk.CTkButton(frame, width=300, height=35, text="Criar nova conta", fg_color="transparent", border_width=2, text_color=self.COR_PRINCIPAL, command=self.tela_cadastro)
+        btn_cadastrar.pack(pady=5)
+
+        # BOTÃO SAIR (Adicione este bloco aqui)
+        btn_sair = ctk.CTkButton(
+            frame, 
+            width=300, 
+            height=35, 
+            text="Sair do Aplicativo", 
+            fg_color="transparent", 
+            text_color="#FF4444", # Cor vermelha suave para indicar saída
+            hover_color=("#FFE5E5", "#331111"), # Efeito de hover amigável para modos claro/escuro
+            command=self.janela.destroy # Fecha a janela e encerra o programa de forma limpa
+        )
+        btn_sair.pack(pady=5)
 
     def processar_login(self):
         email = self.entry_email.get().strip()
@@ -84,6 +111,67 @@ class GuiView:
                 messagebox.showerror("Acesso Negado", "Código 2FA incorreto ou cancelado.")
         else:
             messagebox.showerror("Erro", resultado)
+
+    # ==========================================
+    # TELA DE CADASTRO DE NOVO USUÁRIO
+    # ==========================================
+    def tela_cadastro(self):
+        self.limpar_janela()
+
+        titulo = ctk.CTkLabel(self.janela, text="Nova Conta Corporativa", font=("Roboto", 28, "bold"), text_color=self.COR_PRINCIPAL)
+        titulo.pack(pady=(50, 20))
+
+        frame = ctk.CTkFrame(self.janela, width=400, height=450)
+        frame.place(relx=0.5, rely=0.55, anchor="center")
+        frame.pack_propagate(False)
+
+        ctk.CTkLabel(frame, text="Preencha os dados da sua empresa", font=("Roboto", 14, "bold")).pack(pady=(25, 15))
+
+        self.reg_email = ctk.CTkEntry(frame, width=300, height=35, placeholder_text="E-mail (ex: contato@empresa.com)")
+        self.reg_email.pack(pady=10)
+
+        self.reg_doc = ctk.CTkEntry(frame, width=300, height=35, placeholder_text="CNPJ ou CPF (apenas números)")
+        self.reg_doc.pack(pady=10)
+
+        self.reg_senha = ctk.CTkEntry(frame, width=300, height=35, placeholder_text="Senha (Mín. 8 chars, letras e números)", show="*")
+        self.reg_senha.pack(pady=10)
+
+        btn_salvar = ctk.CTkButton(frame, width=300, height=40, text="Cadastrar Empresa", command=self.processar_cadastro)
+        btn_salvar.pack(pady=(25, 10))
+
+        btn_voltar = ctk.CTkButton(frame, width=300, height=35, text="Voltar ao Login", fg_color="transparent", text_color="gray", hover_color="#333333", command=self.tela_login)
+        btn_voltar.pack(pady=5)
+
+    def processar_cadastro(self):
+        email = self.reg_email.get().strip()
+        doc = self.reg_doc.get().strip()
+        senha = self.reg_senha.get().strip()
+
+        # 1. Verifica se tem campo vazio
+        if not email or not doc or not senha:
+            return messagebox.showwarning("Aviso", "Por favor, preencha todos os campos!")
+
+        # 2. Validação de E-mail com Regex
+        if not re.match(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$", email):
+            return messagebox.showerror("Erro de Validação", "O e-mail digitado não é válido.")
+
+        # 3. Validação de Documento com Regex (Remove formatação e checa se tem 11 ou 14 números)
+        doc_limpo = re.sub(r"[^\d]", "", doc)
+        if not re.match(r"^(\d{11}|\d{14})$", doc_limpo):
+            return messagebox.showerror("Erro de Validação", "O documento deve ter 11 dígitos (CPF) ou 14 dígitos (CNPJ).")
+
+        # 4. Validação de Senha com Regex (Mínimo 8 caracteres, pelo menos uma letra e um número)
+        if not re.match(r"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$", senha):
+            return messagebox.showerror("Erro de Validação", "A senha é muito fraca. Ela deve ter no mínimo 8 caracteres, contendo letras e números.")
+
+        # Se passou por todas as validações, tenta registrar no banco de dados!
+        sucesso, msg = self.auth_service.cadastrar_usuario(email, doc_limpo, senha)
+        
+        if sucesso:
+            messagebox.showinfo("Sucesso", "Conta criada com sucesso! Faça login para acessar o painel.")
+            self.tela_login()
+        else:
+            messagebox.showerror("Erro", msg)
 
     def desenhar_menu_lateral(self, aba_ativa):
         sidebar = ctk.CTkFrame(self.janela, width=220, corner_radius=0)
@@ -215,15 +303,14 @@ class GuiView:
             
         try:
             valor = float(valor_str)
-            # Tenta usar o serviço de finanças. Se o método não existir exatamente com esse nome, ajuste aqui:
             if hasattr(self.finance_service, 'adicionar_transacao'):
-                self.finance_service.adicionar_transacao(self.usuario_atual, tipo, desc, valor)
+                # CORREÇÃO AQUI: A ordem agora é (usuario, tipo, valor, desc)
+                self.finance_service.adicionar_transacao(self.usuario_atual, tipo, valor, desc)
             else:
-                # Fallback caso o método ainda não tenha sido criado no finance_service.py
                 if not hasattr(self.usuario_atual, 'transacoes'):
                     self.usuario_atual.transacoes = []
                 self.usuario_atual.transacoes.append({"tipo": tipo, "descricao": desc, "valor": valor})
-                self.auth_service.repo.salvar_usuario(self.usuario_atual) # Salva no JSON
+                self.auth_service.repo.salvar_usuario(self.usuario_atual)
                 
             messagebox.showinfo("Sucesso", "Transação registrada!")
             self.tela_balanco()
@@ -412,15 +499,32 @@ class GuiView:
         btn.pack(pady=15)
 
     def salvar_meta_gui(self):
-        obj = self.entry_meta_obj.get().strip()
-        val_str = self.entry_meta_val.get().strip()
-        if not obj or not val_str: return
+        objetivo = self.entry_meta_obj.get().strip()
+        valor_str = self.entry_meta_val.get().strip()
+        
+        # 1. Validação simples de campos vazios
+        if not objetivo or not valor_str:
+            return messagebox.showwarning("Aviso", "Preencha o objetivo e o valor da meta.")
+            
         try:
-            self.finance_service.adicionar_meta(self.usuario_atual, obj, float(val_str))
-            messagebox.showinfo("Sucesso", f"Meta '{obj}' registrada!")
-            self.tela_metas()
+            # 2. Conversão crucial do texto para número decimal (float)
+            valor_meta = float(valor_str)
+            
+            # 3. Chama o serviço passando os dados
+            if hasattr(self.finance_service, 'adicionar_meta'):
+                self.finance_service.adicionar_meta(self.usuario_atual, objetivo, valor_meta)
+            else:
+                # Fallback de segurança
+                if not hasattr(self.usuario_atual, 'metas'):
+                    self.usuario_atual.metas = []
+                self.usuario_atual.metas.append({"objetivo": objetivo, "valor": valor_meta})
+                self.auth_service.repo.salvar_usuario(self.usuario_atual)
+                
+            messagebox.showinfo("Sucesso", "Meta financeira adicionada!")
+            self.tela_metas() # Recarrega a tela para mostrar a nova meta na lista
+            
         except ValueError:
-            messagebox.showerror("Erro", "Insira um valor numérico válido.")
+            messagebox.showerror("Erro", "Insira um valor numérico válido para o alvo (Ex: 1500.50).")
 
     def tela_lembretes(self):
         self.limpar_janela()
@@ -442,23 +546,45 @@ class GuiView:
                 data = l.get('data', '--/--/----') if isinstance(l, dict) else getattr(l, 'data', '--/--/----')
                 ctk.CTkLabel(l_frame, text=f"🔔 Vence em {data}\nCompromisso: {conta}", justify="left", anchor="w").pack(padx=10, pady=5)
 
+        # PARTE ADICIONADA: Coluna da direita com o formulário
         right_col = ctk.CTkFrame(content, width=220)
         right_col.pack(side="right", fill="y")
         ctk.CTkLabel(right_col, text="Novo Lembrete", font=("Roboto", 14, "bold")).pack(pady=10)
-        self.entry_lemb_conta = ctk.CTkEntry(right_col, placeholder_text="Ex: DAS", width=180)
-        self.entry_lemb_conta.pack(pady=5)
-        self.entry_lemb_data = ctk.CTkEntry(right_col, placeholder_text="Ex: 20/06/2026", width=180)
-        self.entry_lemb_data.pack(pady=5)
-        btn = ctk.CTkButton(right_col, text="Salvar Lembrete", width=180, command=self.salvar_lembrete_gui)
+        
+        self.entry_lembrete_conta = ctk.CTkEntry(right_col, placeholder_text="Ex: Conta de Luz", width=180)
+        self.entry_lembrete_conta.pack(pady=5)
+        self.entry_lembrete_data = ctk.CTkEntry(right_col, placeholder_text="Ex: 10/06/2026", width=180)
+        self.entry_lembrete_data.pack(pady=5)
+        
+        btn = ctk.CTkButton(right_col, text="Agendar Conta", width=180, command=self.salvar_lembrete_gui)
         btn.pack(pady=15)
 
     def salvar_lembrete_gui(self):
-        conta = self.entry_lemb_conta.get().strip()
-        data = self.entry_lemb_data.get().strip()
-        if not conta or not data: return
-        self.finance_service.adicionar_lembrete(self.usuario_atual, conta, data)
-        messagebox.showinfo("Sucesso", "Lembrete agendado com sucesso!")
+        conta = self.entry_lembrete_conta.get().strip()
+        data = self.entry_lembrete_data.get().strip()
+        
+        if not conta or not data:
+            return messagebox.showwarning("Aviso", "Preencha a descrição da conta e a data de vencimento.")
+            
+        # Como ambos os dados são textos (strings), não precisamos fazer conversão com float()!
+        if hasattr(self.finance_service, 'adicionar_lembrete'):
+            self.finance_service.adicionar_lembrete(self.usuario_atual, conta, data)
+        else:
+            if not hasattr(self.usuario_atual, 'lembretes'):
+                self.usuario_atual.lembretes = []
+            self.usuario_atual.lembretes.append({"conta": conta, "data": data})
+            self.auth_service.repo.salvar_usuario(self.usuario_atual)
+            
+        messagebox.showinfo("Sucesso", "Lembrete de conta agendado!")
         self.tela_lembretes()
+        
+    def toggle_senha(self):
+        """Alterna a visibilidade da senha com base no checkbox."""
+        # Se o checkbox estiver marcado (get() retorna 1)
+        if self.check_mostrar_senha.get() == 1:
+            self.entry_senha.configure(show="")  # Remove o "*" e mostra o texto limpo
+        else:
+            self.entry_senha.configure(show="*")  # Recarrega a tela para atualizar a lista visível
 
     def iniciar(self):
         self.janela.mainloop()
