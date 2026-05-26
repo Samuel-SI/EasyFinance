@@ -10,15 +10,30 @@ class GuiView:
         self.auth_service = auth_service
         self.finance_service = finance_service
         self.usuario_atual = None
-        self.COR_PRINCIPAL = "#1f6aa5" # Tema Azul
 
-        ctk.set_appearance_mode("dark")
-        ctk.set_default_color_theme("blue")
+        # 🪐 Configuração de Aparência Global
+        ctk.set_appearance_mode("dark")  # Deixa o app no modo escuro profundo por padrão
+        
+        # 🎨 Nova Paleta Premium (Estrutura de Tuplas: M. Claro, M. Escuro)
+        self.APP_BG = ("#F8FAFC", "#0B0F19")        # Azul Meia-Noite Profundo
+        self.CARD_BG = ("#FFFFFF", "#111827")       # Cards Grafite Fechado
+        self.PRIMARY = ("#1E3A8A", "#6366F1")       # Índigo de Alta Tecnologia
+        self.ACCENT_GOLD = ("#9A3412", "#F59E0B")   # Ouro Champagne (Luxo)
+        self.TEXT_MAIN = ("#0F172A", "#F1F5F9")     # Texto Ultra Nítido
+        self.TEXT_MUTED = ("#64748B", "#94A3B8")    # Texto de suporte (cinza elegante)
+        
+        # Ponte de segurança: Atualiza seu código antigo para a nova cor sem quebrar nada!
+        self.COR_PRINCIPAL = self.PRIMARY 
 
+        # 🪟 Inicialização e Dimensionamento da Janela
         self.janela = ctk.CTk()
-        self.janela.geometry("950x650") # Aumentei um pouco o tamanho para caber mais dados
+        self.janela.geometry("950x650")
         self.janela.title("EasyFinance - Gestão de Negócios B2B")
+        
+        # Aplica o tom escuro de luxo diretamente no fundo da janela principal
+        self.janela.configure(fg_color=self.APP_BG)
 
+        # Abre o sistema
         self.tela_login()
 
     def limpar_janela(self):
@@ -39,47 +54,91 @@ class GuiView:
         except:
             pass 
 
-        titulo = ctk.CTkLabel(self.janela, text="Bem vindo ao EasyFinance", font=("Roboto", 28, "bold"), text_color=self.COR_PRINCIPAL)
-        titulo.pack(pady=(10, 20))
+        # NOVO TÍTULO PREMIUM (Ouro Champagne sobre fundo meia-noite - VISÍVEL!)
+        titulo = ctk.CTkLabel(
+            self.janela, 
+            text="Bem vindo ao EasyFinance", 
+            font=("Roboto", 28, "bold"), 
+            text_color=self.ACCENT_GOLD # Usando Ouro Champagne
+        )
+        titulo.pack(pady=(20, 30)) # Mais espaçamento
 
-        frame = ctk.CTkFrame(self.janela, width=400, height=400) # Aumentei um pouquinho a altura do frame
+        # FRAME DE LOGIN (Centralizado e Grafite Fechado)
+        frame = ctk.CTkFrame(
+            self.janela, 
+            width=400, 
+            height=400, 
+            corner_radius=12,
+            fg_color=self.CARD_BG # Usando Grafite Fechado
+        )
         frame.place(relx=0.5, rely=0.55, anchor="center")
         frame.pack_propagate(False)
 
-        subtitulo = ctk.CTkLabel(frame, text="Acesse sua Conta Corporativa", font=("Roboto", 14, "bold"))
+        subtitulo = ctk.CTkLabel(frame, text="Acesse sua Conta Corporativa", font=("Roboto", 14, "bold"), text_color=self.TEXT_MUTED)
         subtitulo.pack(pady=(30, 20))
 
-        self.entry_email = ctk.CTkEntry(frame, width=300, height=35, placeholder_text="Digite seu email:")
+        # Campos de entrada discretos e com bordas finas
+        self.entry_email = ctk.CTkEntry(
+            frame, 
+            width=300, 
+            height=38, 
+            placeholder_text="Digite seu e-mail:",
+            corner_radius=8,
+            fg_color=("#F1F5F9", "#1F2937"),
+            border_color=("#CBD5E1", "#374151")
+        )
         self.entry_email.pack(pady=10)
 
-        self.entry_senha = ctk.CTkEntry(frame, width=300, height=35, placeholder_text="Digite sua senha:", show="*")
+        self.entry_senha = ctk.CTkEntry(
+            frame, 
+            width=300, 
+            height=38, 
+            placeholder_text="Digite sua senha:", 
+            show="*",
+            corner_radius=8,
+            fg_color=("#F1F5F9", "#1F2937"),
+            border_color=("#CBD5E1", "#374151")
+        )
         self.entry_senha.pack(pady=10)
 
+        # Usando o frame correto para o checkbox
         self.check_mostrar_senha = ctk.CTkCheckBox(
-            frame, # <-- CORREÇÃO AQUI: mudamos para 'frame'
+            frame, # MUDAMOS PARA FRAME
             text="Mostrar Senha", 
             command=self.toggle_senha, 
-            font=("Roboto", 12)
+            font=("Roboto", 12),
+            text_color=self.TEXT_MUTED
         )
         self.check_mostrar_senha.pack(pady=5)
 
-        btn_entrar = ctk.CTkButton(frame, width=300, height=40, text="Entrar no sistema", command=self.processar_login)
+        # Botão principal em Índigo
+        btn_entrar = ctk.CTkButton(frame, width=300, height=40, text="Entrar no sistema", font=("Roboto", 14, "bold"), command=self.processar_login, corner_radius=8)
         btn_entrar.pack(pady=(25, 15))
 
-        # NOVO BOTÃO DE CADASTRO
-        btn_cadastrar = ctk.CTkButton(frame, width=300, height=35, text="Criar nova conta", fg_color="transparent", border_width=2, text_color=self.COR_PRINCIPAL, command=self.tela_cadastro)
+        # NOVO BOTÃO DE CADASTRO (Transparente corporativo)
+        btn_cadastrar = ctk.CTkButton(
+            frame, 
+            width=300, 
+            height=35, 
+            text="Criar nova conta", 
+            fg_color="transparent", 
+            border_width=2, 
+            text_color=self.COR_PRINCIPAL, # Usará a ponte COR_PRINCIPAL -> PRIMARY
+            corner_radius=8,
+            command=self.tela_cadastro
+        )
         btn_cadastrar.pack(pady=5)
 
-        # BOTÃO SAIR (Adicione este bloco aqui)
+        # BOTÃO SAIR (Vermelho Suave corporativo)
         btn_sair = ctk.CTkButton(
             frame, 
             width=300, 
             height=35, 
             text="Sair do Aplicativo", 
             fg_color="transparent", 
-            text_color="#FF4444", # Cor vermelha suave para indicar saída
-            hover_color=("#FFE5E5", "#331111"), # Efeito de hover amigável para modos claro/escuro
-            command=self.janela.destroy # Fecha a janela e encerra o programa de forma limpa
+            text_color="#FF4444", 
+            corner_radius=8,
+            command=self.janela.destroy
         )
         btn_sair.pack(pady=5)
 
@@ -471,31 +530,63 @@ class GuiView:
     def tela_metas(self):
         self.limpar_janela()
         self.desenhar_menu_lateral("Metas Financeiras")
+        
+        # Painel principal do conteúdo
         content = ctk.CTkFrame(self.janela, fg_color="transparent")
         content.pack(side="right", fill="both", expand=True, padx=30, pady=30)
-        ctk.CTkLabel(content, text="Metas e Objetivos do Negócio", font=("Roboto", 24, "bold")).pack(anchor="w", pady=(0, 20))
         
-        left_col = ctk.CTkScrollableFrame(content, width=320, height=350)
+        # Título da tela principal em Branco Nítido
+        ctk.CTkLabel(content, text="Metas e Objetivos do Negócio", font=("Roboto", 24, "bold"), text_color=self.TEXT_MAIN).pack(anchor="w", pady=(0, 20))
+        
+        # Coluna da Esquerda (Lista de Metas com fundo Grafite Fechado)
+        left_col = ctk.CTkScrollableFrame(content, width=320, height=350, fg_color=self.CARD_BG, corner_radius=12)
         left_col.pack(side="left", fill="both", expand=True, padx=(0, 20))
         
         if not hasattr(self.usuario_atual, 'metas') or not self.usuario_atual.metas:
-            ctk.CTkLabel(left_col, text="Nenhuma meta cadastrada.", text_color="gray").pack(pady=20)
+            ctk.CTkLabel(left_col, text="Nenhuma meta cadastrada.", text_color=self.TEXT_MUTED).pack(pady=20)
         else:
             for m in self.usuario_atual.metas:
-                m_frame = ctk.CTkFrame(left_col)
-                m_frame.pack(fill="x", pady=4, padx=5)
+                # Card com cantos arredondados e cores para os modos claro/escuro
+                # CORREÇÃO: Usando a COR_PRINCIPAL antiga ou constantes novas
+                m_frame = ctk.CTkFrame(left_col, corner_radius=12, fg_color=("#EAEAEA", "#2B2B2B")) # Adicionei o '#' que faltava no 2B2B2B
+                m_frame.pack(fill="x", pady=8, padx=10)
+                
                 obj = m.get('objetivo', 'Meta') if isinstance(m, dict) else getattr(m, 'objetivo', 'Meta')
                 val = m.get('valor', 0.0) if isinstance(m, dict) else getattr(m, 'valor', 0.0)
-                ctk.CTkLabel(m_frame, text=f"🎯 {obj}\nAlvo: R$ {val:.2f}", justify="left", anchor="w").pack(padx=10, pady=5)
+                
+                # Texto 1: O Objetivo (Maior, em Negrito, e em Branco Nítido - VISÍVEL!)
+                lbl_obj = ctk.CTkLabel(
+                    m_frame, 
+                    text=f"🎯 {obj}", 
+                    font=("Roboto", 16, "bold"), 
+                    text_color=self.TEXT_MAIN, # Garantindo que contraste com o card
+                    anchor="w"
+                )
+                lbl_obj.pack(fill="x", padx=15, pady=(12, 2))
+                
+                # Texto 2: O Valor Alvo (Verde de destaque com formatação correta de milhar)
+                lbl_val = ctk.CTkLabel(
+                    m_frame, 
+                    text=f"Alvo: R$ {val:,.2f}".replace(",", "."), 
+                    font=("Roboto", 13, "bold"), 
+                    text_color=("#27AE60", "#2ECC71"), # Verde vibrante
+                    anchor="w"
+                )
+                lbl_val.pack(fill="x", padx=15, pady=(0, 12))
 
-        right_col = ctk.CTkFrame(content, width=220)
+        # Coluna da Direita (Formulário de Nova Meta)
+        right_col = ctk.CTkFrame(content, width=220, fg_color=self.CARD_BG, corner_radius=12)
         right_col.pack(side="right", fill="y")
-        ctk.CTkLabel(right_col, text="Nova Meta", font=("Roboto", 14, "bold")).pack(pady=10)
-        self.entry_meta_obj = ctk.CTkEntry(right_col, placeholder_text="Ex: Novo Servidor", width=180)
+        
+        ctk.CTkLabel(right_col, text="Nova Meta", font=("Roboto", 14, "bold"), text_color=self.TEXT_MAIN).pack(pady=10)
+        
+        self.entry_meta_obj = ctk.CTkEntry(right_col, placeholder_text="Ex: Novo Servidor", width=180, corner_radius=8)
         self.entry_meta_obj.pack(pady=5)
-        self.entry_meta_val = ctk.CTkEntry(right_col, placeholder_text="Ex: 5000.00", width=180)
+        
+        self.entry_meta_val = ctk.CTkEntry(right_col, placeholder_text="Ex: 5000.00", width=180, corner_radius=8)
         self.entry_meta_val.pack(pady=5)
-        btn = ctk.CTkButton(right_col, text="Adicionar Meta", width=180, command=self.salvar_meta_gui)
+        
+        btn = ctk.CTkButton(right_col, text="Adicionar Meta", width=180, font=("Roboto", 14, "bold"), command=self.salvar_meta_gui, corner_radius=8)
         btn.pack(pady=15)
 
     def salvar_meta_gui(self):
@@ -529,10 +620,15 @@ class GuiView:
     def tela_lembretes(self):
         self.limpar_janela()
         self.desenhar_menu_lateral("Lembretes de Contas")
+        
+        # Painel principal do conteúdo
         content = ctk.CTkFrame(self.janela, fg_color="transparent")
         content.pack(side="right", fill="both", expand=True, padx=30, pady=30)
+        
+        # Título principal da tela
         ctk.CTkLabel(content, text="Lembretes de Contas a Pagar", font=("Roboto", 24, "bold")).pack(anchor="w", pady=(0, 20))
         
+        # Coluna da Esquerda (Lista de Lembretes)
         left_col = ctk.CTkScrollableFrame(content, width=320, height=350)
         left_col.pack(side="left", fill="both", expand=True, padx=(0, 20))
         
@@ -540,19 +636,41 @@ class GuiView:
             ctk.CTkLabel(left_col, text="Nenhum compromisso agendado.", text_color="gray").pack(pady=20)
         else:
             for l in self.usuario_atual.lembretes:
-                l_frame = ctk.CTkFrame(left_col)
-                l_frame.pack(fill="x", pady=4, padx=5)
+                # Card moderno com cantos arredondados e suporte a tema claro/escuro
+                l_frame = ctk.CTkFrame(left_col, corner_radius=12, fg_color=("#EAEAEA", "#2B2B2B"))
+                l_frame.pack(fill="x", pady=8, padx=10)
+                
                 conta = l.get('conta', 'Conta') if isinstance(l, dict) else getattr(l, 'conta', 'Conta')
                 data = l.get('data', '--/--/----') if isinstance(l, dict) else getattr(l, 'data', '--/--/----')
-                ctk.CTkLabel(l_frame, text=f"🔔 Vence em {data}\nCompromisso: {conta}", justify="left", anchor="w").pack(padx=10, pady=5)
+                
+                # Texto 1: O Compromisso/Conta (Destacado, maior e em negrito)
+                lbl_conta = ctk.CTkLabel(
+                    l_frame, 
+                    text=f"📋 {conta}", 
+                    font=("Roboto", 16, "bold"), 
+                    anchor="w"
+                )
+                lbl_conta.pack(fill="x", padx=15, pady=(12, 2))
+                
+                # Texto 2: A Data de Vencimento (Laranja vibrante para dar senso de urgência)
+                lbl_data = ctk.CTkLabel(
+                    l_frame, 
+                    text=f"📅 Vence em: {data}", 
+                    font=("Roboto", 13), 
+                    text_color=("#D35400", "#E67E22"),
+                    anchor="w"
+                )
+                lbl_data.pack(fill="x", padx=15, pady=(0, 12))
 
-        # PARTE ADICIONADA: Coluna da direita com o formulário
+        # Coluna da Direita (Formulário de Novo Lembrete)
         right_col = ctk.CTkFrame(content, width=220)
         right_col.pack(side="right", fill="y")
+        
         ctk.CTkLabel(right_col, text="Novo Lembrete", font=("Roboto", 14, "bold")).pack(pady=10)
         
         self.entry_lembrete_conta = ctk.CTkEntry(right_col, placeholder_text="Ex: Conta de Luz", width=180)
         self.entry_lembrete_conta.pack(pady=5)
+        
         self.entry_lembrete_data = ctk.CTkEntry(right_col, placeholder_text="Ex: 10/06/2026", width=180)
         self.entry_lembrete_data.pack(pady=5)
         
