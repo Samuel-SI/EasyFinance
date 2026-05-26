@@ -6,10 +6,15 @@ import re
 from src.views.core_window import CoreWindow
 
 class LoginCadastro(CoreWindow):
+    def __init__(self, auth_service, finance_service, janela=None):
+        """Inicializa a classe garantindo a herança correta dos serviços e da janela mestre."""
+        super().__init__(auth_service, finance_service, janela)
+
     def tela_login(self):
         self.limpar_janela()
         self.usuario_atual = None
 
+        # Tentativa de carregar o logotipo da aplicação
         try:
             imagem_logo = ctk.CTkImage(light_image=Image.open("logo.png"), dark_image=Image.open("logo.png"), size=(120, 120))
             lbl_logo = ctk.CTkLabel(self.janela, image=imagem_logo, text="")
@@ -20,7 +25,8 @@ class LoginCadastro(CoreWindow):
         titulo = ctk.CTkLabel(self.janela, text="Bem vindo ao EasyFinance", font=("Roboto", 28, "bold"), text_color=self.ACCENT_GOLD)
         titulo.pack(pady=(20, 30))
 
-        frame = ctk.CTkFrame(self.janela, width=400, height=400, corner_radius=12, fg_color=self.CARD_BG)
+        # Ajustado o tamanho para 450 para acomodar perfeitamente o botão de Sair
+        frame = ctk.CTkFrame(self.janela, width=400, height=450, corner_radius=12, fg_color=self.CARD_BG)
         frame.place(relx=0.5, rely=0.55, anchor="center")
         frame.pack_propagate(False)
 
@@ -42,6 +48,22 @@ class LoginCadastro(CoreWindow):
         btn_cadastrar = ctk.CTkButton(frame, width=300, height=35, text="Criar nova conta", fg_color="transparent", border_width=2, text_color=self.COR_PRINCIPAL, corner_radius=8, command=self.tela_cadastro)
         btn_cadastrar.pack(pady=5)
 
+        # Botão de Sair elegante integrado ao layout do card
+        btn_fechar_app = ctk.CTkButton(
+            frame, 
+            width=300, 
+            height=35, 
+            text="Sair", 
+            fg_color="transparent", 
+            border_color="#e74c3c", 
+            border_width=1, 
+            text_color="#e74c3c", 
+            corner_radius=8,
+            hover_color=("#FADBD8", "#2C1A1A"),
+            command=self.janela.destroy
+        )
+        btn_fechar_app.pack(pady=5)
+
     def processar_login(self):
         email = self.entry_email.get().strip()
         senha = self.entry_senha.get().strip()
@@ -50,7 +72,7 @@ class LoginCadastro(CoreWindow):
             messagebox.showwarning("Aviso", "Por favor, preencha todos os campos!")
             return
             
-        sucesso, resultado = self.auth_service.realizar_login(email, senha) # Nota: assumindo a injeção correta do serviço
+        sucesso, resultado = self.auth_service.realizar_login(email, senha)
 
         if sucesso:
             usuario = resultado
