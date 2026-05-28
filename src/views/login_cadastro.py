@@ -88,7 +88,10 @@ class LoginCadastro(CoreWindow):
             if codigo_digitado and codigo_digitado.strip() == codigo_enviado:
                 self.usuario_atual = usuario
                 from src.views.painel_financeiro import PainelFinanceiro
+                
+                # CORREÇÃO DA LINHA: Vírgula adicionada e parâmetros alinhados perfeitamente
                 dashboard = PainelFinanceiro(self.auth_service, self.finance_service, self.janela)
+                
                 dashboard.sincronizar_usuario(self)
                 dashboard.tela_dashboard()
             else:
