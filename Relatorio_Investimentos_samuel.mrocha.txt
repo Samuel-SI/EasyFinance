@@ -1,0 +1,25 @@
+============================================================
+          EASYFINANCE - RELATÓRIO DE PERFORMANCE B2B
+Data de Emissão: 28/05/2026 13:54:52
+Conta Empresarial: samuel.mrocha@ufrpe.br
+============================================================
+
+COTAÇÕES DE REFERÊNCIA EM TEMPO REAL:
+ -> Dólar (USD): R$ 5.05
+ -> Euro (EUR): R$ 5.89
+------------------------------------------------------------
+
+DETALHAMENTO DA CARTEIRA CORPORATIVA:
+
+Ativo: USD | Qtd: 1500.0 | Custo Unitário: R$ 5.06
+ > Custo Inicial Investido: R$ 7590.00
+ > Valor de Mercado Atual: R$ 7581.30 (Cotado a R$ 5.05)
+ > Rendimento Consolidado: R$ -8.70 (-0.11%)
+----------------------------------------
+
+============================================================
+RESUMO PATRIMONIAL DA EMPRESA:
+Total Investido Inicial: R$ 7590.00
+Total Avaliado Atualmente: R$ 7581.30
+Resultado Líquido do Portfólio: R$ -8.70 (-0.11%)
+============================================================

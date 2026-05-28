@@ -24,8 +24,7 @@ class SqliteRepository:
                     documento TEXT,
                     senha TEXT,
                     pontos INTEGER,
-                    ranking TEXT          
-                           
+                    ranking TEXT           
                  )
             ''')
 
@@ -60,6 +59,20 @@ class SqliteRepository:
                     FOREIGN KEY (usuario_email) REFERENCES usuarios (email)
                 )
             ''')
+
+            # 💹 NOVA TABELA: Investimentos Corporativos (RF019)
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS investimentos (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    usuario_email TEXT,
+                    ticker TEXT NOT NULL,         -- Ex: 'USD', 'EUR', 'PETR4'
+                    quantidade REAL NOT NULL,
+                    preco_compra REAL NOT NULL,
+                    data_compra TEXT NOT NULL,    -- Data formatada como YYYY-MM-DD
+                    FOREIGN KEY (usuario_email) REFERENCES usuarios (email)
+                )
+            ''')
+
             conn.commit()
 
     def email_existe(self, email: str) -> bool:
@@ -91,10 +104,21 @@ class SqliteRepository:
             usuario.transacoes = [{"tipo": r["tipo"], "descricao": r["descricao"], "valor": r["valor"]} for r in cursor.fetchall()]
 
             cursor.execute('SELECT objetivo, valor FROM metas WHERE usuario_email = ?', (email,))
-            usuario.metas = [{"objetivo": r["objetivo"], "valor": r["valor"]}for r in cursor.fetchall()]
+            usuario.metas = [{"objetivo": r["objetivo"], "valor": r["valor"]} for r in cursor.fetchall()]
 
             cursor.execute('SELECT conta, data FROM lembretes WHERE usuario_email = ?', (email,))
-            usuario.lembretes = [{"conta":r["conta"], "data": r["data"]}for r in cursor.fetchall()]
+            usuario.lembretes = [{"conta": r["conta"], "data": r["data"]} for r in cursor.fetchall()]
+
+            # 💹 NOVO CARREGAMENTO: Busca a carteira de investimentos do usuário
+            cursor.execute('SELECT ticker, quantidade, preco_compra, data_compra FROM investimentos WHERE usuario_email = ?', (email,))
+            usuario.investimentos = [
+                {
+                    "ticker": r["ticker"], 
+                    "quantidade": r["quantidade"], 
+                    "preco_compra": r["preco_compra"], 
+                    "data_compra": r["data_compra"]
+                } for r in cursor.fetchall()
+            ]
 
             return usuario
         
@@ -118,11 +142,11 @@ class SqliteRepository:
                 getattr(usuario, 'ranking', 'Iniciante')
             ))
 
-            # ... o resto continua igualzinho (os deletes e inserts das listas) ...
-
+            # Remove os dados antigos para evitar duplicidade antes de salvar os novos
             cursor.execute('DELETE FROM transacoes WHERE usuario_email = ?', (usuario.email,))
             cursor.execute('DELETE FROM metas WHERE usuario_email = ?', (usuario.email,))
             cursor.execute('DELETE FROM lembretes WHERE usuario_email = ?', (usuario.email,))
+            cursor.execute('DELETE FROM investimentos WHERE usuario_email = ?', (usuario.email,)) # 💹 Limpa investimentos
 
             if hasattr(usuario, 'transacoes'):
                 for t in usuario.transacoes:
@@ -130,17 +154,33 @@ class SqliteRepository:
                         INSERT INTO transacoes (usuario_email, tipo, descricao, valor)
                         VALUES (?, ?, ?, ?)
                     ''', (usuario.email, t.get('tipo'), t.get('descricao'), t.get('valor')))
+
             if hasattr(usuario, 'metas'):
                 for m in usuario.metas:
                     cursor.execute('''
                         INSERT INTO metas (usuario_email, objetivo, valor)
                         VALUES (?, ?, ?)
                     ''', (usuario.email, m.get('objetivo'), m.get('valor')))
+
             if hasattr(usuario, 'lembretes'):
                 for l in usuario.lembretes:
                     cursor.execute('''
                         INSERT INTO lembretes (usuario_email, conta, data)
                         VALUES (?, ?, ?)
                     ''', (usuario.email, l.get('conta'), l.get('data')))
+
+            # 💹 NOVA GRAVAÇÃO: Insere os investimentos atuais do usuário
+            if hasattr(usuario, 'investimentos'):
+                for i in usuario.investimentos:
+                    cursor.execute('''
+                        INSERT INTO investimentos (usuario_email, ticker, quantidade, preco_compra, data_compra)
+                        VALUES (?, ?, ?, ?, ?)
+                    ''', (
+                        usuario.email, 
+                        i.get('ticker').upper(), 
+                        i.get('quantidade'), 
+                        i.get('preco_compra'), 
+                        i.get('data_compra')
+                    ))
 
             conn.commit()

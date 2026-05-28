@@ -2,14 +2,22 @@
 import customtkinter as ctk
 from tkinter import messagebox
 from src.views.core_window import CoreWindow
+from src.views.aba_investimentos import AbaInvestimentos
+from src.services.finance_service import FinanceService
 
 class PainelFinanceiro(CoreWindow):
     def tela_dashboard(self):
         self.limpar_janela()
         self.desenhar_menu_lateral("Painel Principal")
 
+        # Inicializa o serviço financeiro corretamente
+        self.finance_service = FinanceService(self.auth_service.repo)
+
         content = ctk.CTkFrame(self.janela, fg_color="transparent")
         content.pack(side="right", fill="both", expand=True, padx=30, pady=30)
+
+        # Renderização do banner do RF021
+        self.renderizar_alertas_dashboard(content)
 
         ctk.CTkLabel(content, text="Painel Principal", font=("Roboto", 24, "bold"), text_color=self.TEXT_MAIN).pack(anchor="w", pady=(0, 20))
 
@@ -25,12 +33,73 @@ class PainelFinanceiro(CoreWindow):
         self.criar_card(financas_frame, "Receitas do Mês", f"R$ {total_receitas:.2f}", self.COR_PRINCIPAL)
         self.criar_card(financas_frame, "Despesas do Mês", f"R$ {total_despesas:.2f}", "#e74c3c")
 
-        ctk.CTkLabel(content, text="Seu Desempenho B2B", font=("Roboto", 18, "bold"), text_color=self.TEXT_MAIN).pack(anchor="w", pady=(20, 10))
+        # =========================================================================
+        # ✨ IMPLEMENTAÇÃO DO REQUISITO RF026: CONTROLE DE TETO DE GASTOS (BUDGETING)
+        # =========================================================================
+        ctk.CTkLabel(content, text="Controle de Teto de Gastos (Budgeting)", font=("Roboto", 18, "bold"), text_color=self.TEXT_MAIN).pack(anchor="w", pady=(20, 10))
+        
+        budget_scroll = ctk.CTkScrollableFrame(content, height=140, fg_color=self.CARD_BG, corner_radius=10)
+        budget_scroll.pack(fill="x", pady=(0, 10))
+
+        # Agrupamento dinâmico das despesas por categoria/descrição para monitoramento
+        gastos_por_categoria = {}
+        for t in transacoes:
+            tipo = t.get('tipo', '') if isinstance(t, dict) else getattr(t, 'tipo', '')
+            if tipo == "Despesa":
+                desc = t.get('descricao', 'Geral') if isinstance(t, dict) else getattr(t, 'descricao', 'Geral')
+                val = float(t.get('valor', 0)) if isinstance(t, dict) else float(getattr(t, 'valor', 0))
+                gastos_por_categoria[desc] = gastos_por_categoria.get(desc, 0.0) + val
+
+        # Definição de metas orçamentárias (Teto padrão corporativo de R$ 3.000,00 por categoria)
+        TETO_PADRAO = 3000.0
+
+        if not gastos_por_categoria:
+            ctk.CTkLabel(budget_scroll, text="Nenhum gasto registrado para monitoramento de teto.", text_color=self.TEXT_MUTED, font=("Roboto", 13)).pack(pady=40)
+        else:
+            for categoria, total_gasto in gastos_por_categoria.items():
+                percentagem = total_gasto / TETO_PADRAO
+                percentagem_limitada = min(percentagem, 1.0) # Trava visual para a barra do CustomTkinter
+
+                # Lógica algorítmica de cores exigida pelo RF026
+                if percentagem >= 1.0:
+                    cor_status = "#e74c3c"     # Vermelho: Estourou 100%
+                    texto_status = "⚠️ ORÇAMENTO ESTOURADO!"
+                elif percentagem >= 0.8:
+                    cor_status = "#f1c40f"     # Amarelo: Passou de 80% (Alerta)
+                    texto_status = "🟡 Próximo ao Limite"
+                else:
+                    cor_status = "#2ecc71"     # Verde: Operando sob controle seguro
+                    texto_status = "🟢 Dentro do Teto"
+
+                # Criação da linha de progresso na listagem
+                item_frame = ctk.CTkFrame(budget_scroll, fg_color="transparent")
+                item_frame.pack(fill="x", padx=10, pady=6)
+
+                # Rótulos informativos
+                lbl_info = ctk.CTkLabel(
+                    item_frame, 
+                    text=f"{categoria.upper()} — R$ {total_gasto:.2f} de R$ {TETO_PADRAO:.2f} ({percentagem * 100:.1f}%)",
+                    font=("Roboto", 13, "bold"),
+                    text_color=self.TEXT_MAIN
+                )
+                lbl_info.pack(side="left")
+
+                lbl_msg_status = ctk.CTkLabel(item_frame, text=texto_status, font=("Roboto", 12, "italic"), text_color=cor_status)
+                lbl_msg_status.pack(side="right", padx=(10, 0))
+
+                # Barra de progresso visual do CustomTkinter injetada com a cor reativa
+                bar = ctk.CTkProgressBar(budget_scroll, height=10, progress_color=cor_status, fg_color=("#EAEAEA", "#1F2937"))
+                bar.set(percentagem_limitada)
+                bar.pack(fill="x", padx=10, pady=(0, 10))
+
+        # =========================================================================
+
+        ctk.CTkLabel(content, text="Seu Desempenho B2B", font=("Roboto", 18, "bold"), text_color=self.TEXT_MAIN).pack(anchor="w", pady=(15, 10))
 
         gamifica_frame = ctk.CTkFrame(content, fg_color="transparent")
-        gamifica_frame.pack(fill="x", pady=10)
+        gamifica_frame.pack(fill="x", pady=5)
 
-        self.criar_card(gamifica_frame, "Sua Pontuação Técnica", f"{self.usuario_atual.pontos} XP", "#f1c40f")
+        self.criar_card(gamifica_frame, "Sua Pontuação Técnico", f"{self.usuario_atual.points if hasattr(self.usuario_atual, 'points') else getattr(self.usuario_atual, 'pontos', 0)} XP", "#f1c40f")
         self.criar_card(gamifica_frame, "Nível do Perfil", f"{self.usuario_atual.ranking}", "#9b59b6")
 
     def criar_card(self, parent, titulo, valor, cor_valor):
@@ -39,6 +108,46 @@ class PainelFinanceiro(CoreWindow):
         card.pack_propagate(False)
         ctk.CTkLabel(card, text=titulo, font=("Roboto", 14), text_color=self.TEXT_MUTED).pack(pady=(15, 5))
         ctk.CTkLabel(card, text=valor, font=("Roboto", 22, "bold"), text_color=cor_valor).pack()
+
+    def renderizar_alertas_dashboard(self, parent_frame):
+        """Renderiza o banner de custo de oportunidade no topo do painel principal (RF021)"""
+        dados_alerta = self.finance_service.verificar_custo_oportunidade(self.usuario_atual)
+
+        if dados_alerta.get("disparar_alerta", False):
+            self.frame_alerta_rf021 = ctk.CTkFrame(parent_frame, fg_color=("#FFFBEB", "#78350F"), corner_radius=8, border_width=1, border_color="#F59E0B")
+            self.frame_alerta_rf021.pack(fill="x", pady=(0, 20))
+
+            texto_aviso = (
+                f"⚠️ Alerta de Custo de Oportunidade: Sua empresa possui R$ {dados_alerta['saldo']:.2f} parados em caixa. "
+                f"Investir o excesso (R$ {dados_alerta['excesso']:.2f}) evitaria uma perda estimada de "
+                f"R$ {dados_alerta['perda_mensal_estimada']:.2f}/mês."
+            )
+            
+            lbl_aviso = ctk.CTkLabel(
+                self.frame_alerta_rf021, 
+                text=texto_aviso, 
+                font=("Roboto", 13, "bold"), 
+                text_color=("#B45309", "#FEF3C7"),
+                wraplength=650,
+                justify="left"
+            )
+            lbl_aviso.pack(side="left", padx=15, pady=10, fill="x", expand=True)
+
+            btn_fechar_alerta = ctk.CTkButton(
+                self.frame_alerta_rf021,
+                text="✕",
+                width=30,
+                height=30,
+                fg_color="transparent",
+                hover_color=("#FDE68A", "#92400E"),
+                text_color=("#B45309", "#FEF3C7"),
+                command=self.fechar_alerta_oportunidade
+            )
+            btn_fechar_alerta.pack(side="right", padx=10, pady=10)
+
+    def fechar_alerta_oportunidade(self):
+        if hasattr(self, 'frame_alerta_rf021') and self.frame_alerta_rf021.winfo_exists():
+            self.frame_alerta_rf021.destroy()
 
     def tela_balanco(self):
         self.limpar_janela()
@@ -78,7 +187,7 @@ class PainelFinanceiro(CoreWindow):
         self.combo_tipo_transacao = ctk.CTkComboBox(right_col, values=["Receita", "Despesa"], width=180)
         self.combo_tipo_transacao.pack(pady=5)
         
-        self.entry_desc_transacao = ctk.CTkEntry(right_col, placeholder_text="Descrição (Ex: Venda)", width=180)
+        self.entry_desc_transacao = ctk.CTkEntry(right_col, placeholder_text="Descrição (Ex: Marketing)", width=180)
         self.entry_desc_transacao.pack(pady=5)
         
         self.entry_valor_transacao = ctk.CTkEntry(right_col, placeholder_text="Valor (Ex: 1500.00)", width=180)
@@ -97,14 +206,10 @@ class PainelFinanceiro(CoreWindow):
             
         try:
             valor = float(valor_str)
-            if hasattr(self.finance_service, 'adicionar_transacao'):
-                self.finance_service.adicionar_transacao(self.usuario_atual, tipo, valor, desc)
-            else:
-                if not hasattr(self.usuario_atual, 'transacoes'):
-                    self.usuario_atual.transacoes = []
-                self.usuario_atual.transacoes.append({"tipo": tipo, "descricao": desc, "valor": valor})
-                self.auth_service.repo.salvar_usuario(self.usuario_atual)
+            if not hasattr(self, 'finance_service'):
+                self.finance_service = FinanceService(self.auth_service.repo)
                 
+            self.finance_service.adicionar_transacao(self.usuario_atual, tipo, valor, desc)
             messagebox.showinfo("Sucesso", "Transação registrada!")
             self.tela_balanco()
         except ValueError:
@@ -142,3 +247,17 @@ class PainelFinanceiro(CoreWindow):
             
         ctk.CTkLabel(diag_frame, text=f"Status Atual: {status}", font=("Roboto", 22, "bold"), text_color=cor).pack(pady=(40, 20))
         ctk.CTkLabel(diag_frame, text=msg, font=("Roboto", 16), text_color=self.TEXT_MAIN, wraplength=500, justify="center").pack(pady=20)
+
+    def tela_investimentos(self):
+        self.limpar_janela()
+        self.desenhar_menu_lateral("Investimentos")
+
+        content = ctk.CTkFrame(self.janela, fg_color="transparent")
+        content.pack(side="right", fill="both", expand=True, padx=30, pady=30)
+
+        aba_investimentos = AbaInvestimentos(
+            parent=content,
+            repository=self.auth_service.repo,
+            usuario_atual=self.usuario_atual
+        )
+        aba_investimentos.pack(fill="both", expand=True)

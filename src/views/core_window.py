@@ -1,5 +1,6 @@
 # src/views/core_window.py
 import customtkinter as ctk
+import threading  # 🧵 Importado para eliminar o congelamento de 1 segundo
 
 class CoreWindow:
     def __init__(self, auth_service, finance_service, janela=None):
@@ -26,6 +27,7 @@ class CoreWindow:
             self.janela = janela
 
     def limpar_janela(self):
+        """Limpa todos os widgets da janela principal para garantir uma troca de página limpa."""
         for widget in self.janela.winfo_children():
             widget.destroy()
 
@@ -35,42 +37,79 @@ class CoreWindow:
 
     def desenhar_menu_lateral(self, aba_ativa):
         from src.views.painel_financeiro import PainelFinanceiro
+        from src.views.aba_investimentos import AbaInvestimentos
         from src.views.modulos_suporte import ModulosSuporte
         from src.views.login_cadastro import LoginCadastro
 
+        # Montagem do painel de navegação esquerdo
         sidebar = ctk.CTkFrame(self.janela, width=220, corner_radius=0, fg_color=self.CARD_BG)
         sidebar.pack(side="left", fill="y")
 
         lbl_menu = ctk.CTkLabel(sidebar, text="EASYFINANCE", font=("Roboto", 20, "bold"), text_color=self.COR_PRINCIPAL)
         lbl_menu.pack(pady=30)
 
-        # Lazy loading instanciado via funções anônimas para evitar colisões de importação circular
+        # Determina o repositório de dados ativo
+        repositorio_real = getattr(self.finance_service, 'repo', self.finance_service)
+
+        # Configuração das Fábricas de Instanciação
         f_view = lambda: PainelFinanceiro(self.auth_service, self.finance_service, self.janela)
         m_view = lambda: ModulosSuporte(self.auth_service, self.finance_service, self.janela)
         l_view = lambda: LoginCadastro(self.auth_service, self.finance_service, self.janela)
+        i_view = lambda: AbaInvestimentos(self.janela, repositorio_real, self.usuario_atual)
 
-        def alternar_tela(classe_view, metodo_tela):
-            instancia = classe_view()
-            instancia.usuario_atual = self.usuario_atual
-            metodo_tela(instancia)
+        def alternar_tela(fabrica_view, metodo_tela, nome_da_aba, muda_layout=True, eh_frame_investimentos=False):
+            """Executa a mudança física de tela de forma assíncrona se necessário."""
+            self.limpar_janela()
+            
+            if muda_layout:
+                self.desenhar_menu_lateral(nome_da_aba)
 
+            if eh_frame_investimentos:
+                # 🚀 INSTANTÂNEO: Renderiza o esqueleto visual imediatamente
+                container_painel = fabrica_view()
+                container_painel.pack(side="right", fill="both", expand=True, padx=10, pady=10)
+                
+                if hasattr(container_painel, 'atualizar_painel'):
+                    # 🧵 Cria uma linha de execução separada para a API rodar no fundo sem congelar o app
+                    thread_api = threading.Thread(target=container_painel.atualizar_painel, daemon=True)
+                    thread_api.start()
+            else:
+                # Sistema legado funcional padrão
+                instancia = fabrica_view()
+                instancia.usuario_atual = self.usuario_atual
+                instancia.repository = repositorio_real
+                
+                if not hasattr(instancia, 'renderizar_alertas_dashboard'):
+                    instancia.renderizar_alertas_dashboard = lambda *args, **kwargs: None
+                
+                metodo_tela(instancia)
+
+        # Mapeamento de rotas internas
         abas = [
-            ("Painel Principal", lambda: alternar_tela(f_view, PainelFinanceiro.tela_dashboard)),
-            ("Balanço Geral", lambda: alternar_tela(f_view, PainelFinanceiro.tela_balanco)),
-            ("Diagnóstico Financeiro", lambda: alternar_tela(f_view, PainelFinanceiro.tela_diagnostico)),
-            ("Área de Educação", lambda: alternar_tela(m_view, ModulosSuporte.tela_educacao)),
-            ("Metas Financeiras", lambda: alternar_tela(m_view, ModulosSuporte.tela_metas)),
-            ("Lembretes de Contas", lambda: alternar_tela(m_view, ModulosSuporte.tela_lembretes)),
-            ("Editar Perfil", lambda: alternar_tela(m_view, ModulosSuporte.tela_perfil))
+            ("Painel Principal", f_view, PainelFinanceiro.tela_dashboard, False),
+            ("Balanço Geral", f_view, PainelFinanceiro.tela_balanco, False),
+            ("Diagnóstico Financeiro", f_view, PainelFinanceiro.tela_diagnostico, False),
+            ("Investimentos", i_view, None, True), # Flag True para acionar a otimização de segundo plano
+            ("Área de Educação", m_view, ModulosSuporte.tela_educacao, False),
+            ("Metas Financeiras", m_view, ModulosSuporte.tela_metas, False),
+            ("Lembretes de Contas", m_view, ModulosSuporte.tela_lembretes, False),
+            ("Editar Perfil", m_view, ModulosSuporte.tela_perfil, False)
         ]
 
-        for nome, comando in abas:
+        # Renderização dos botões
+        for nome, fabrica, metodo, eh_invest in abas:
             cor_botao = self.COR_PRINCIPAL if nome == aba_ativa else "transparent"
-            btn = ctk.CTkButton(sidebar, text=nome, fg_color=cor_botao, anchor="w", command=comando)
+            
+            def criar_comando(f=fabrica, m=metodo, n=nome, inv=eh_invest):
+                return lambda: alternar_tela(f, m, nome_da_aba=n, muda_layout=True, eh_frame_investimentos=inv)
+
+            btn = ctk.CTkButton(sidebar, text=nome, fg_color=cor_botao, anchor="w", command=criar_comando())
             btn.pack(fill="x", padx=10, pady=5)
 
-        btn_sair = ctk.CTkButton(sidebar, text="Sair", fg_color="#c0392b", hover_color="#962d22", 
-                               command=lambda: alternar_tela(l_view, LoginCadastro.tela_login))
+        btn_sair = ctk.CTkButton(
+            sidebar, text="Sair", fg_color="#c0392b", hover_color="#962d22", 
+            command=lambda: alternar_tela(l_view, LoginCadastro.tela_login, nome_da_aba="Login", muda_layout=False, eh_frame_investimentos=False)
+        )
         btn_sair.pack(side="bottom", fill="x", padx=10, pady=20)
 
     def iniciar(self):

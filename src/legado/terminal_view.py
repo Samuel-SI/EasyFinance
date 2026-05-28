@@ -106,9 +106,9 @@ class TerminalView:
             elif opcao == '2':
                 self.tela_extrato(usuario)
             elif opcao == '3':
-                self.tela_adicionar_lembrete(usuario)
+                self.tela_lembretes(usuario)
             elif opcao == '4':
-                self.tela_adicionar_meta(usuario)
+                self.tela_metas(usuario)
             elif opcao == '5':
                 self.tela_educacao(usuario)
             elif opcao == '6':
@@ -147,24 +147,56 @@ class TerminalView:
         vis.exibir_tabela_financeira(lista_dit)
         input("\nPressione Enter para voltar...")
 
-    def tela_adicionar_lembrete(self, usuario: Usuario):
-        vis.exibir_cabecalho("NOVO LEMBRETE")
-        conta = input("Nome da conta (Ex: Luz, Internet): ")
-        data = input("Data de vencimento (DD/MM/AAAA): ")
-        self.finance_service.adicionar_lembrete(usuario, conta, data)
-        print(f"\n{vis.GREEN}Lembrete salvo com sucesso!{vis.RESET}")
-        input("\nPressione Enter para voltar...")
+    def tela_lembretes(self, usuario: Usuario):
+        vis.exibir_cabecalho("MEUS LEMBRETES CADASTRADOA")
+        if not hasattr(usuario, 'lembretes') or not usuario.lembretes:
+            print(f"{vis.RED}Você não tem lembretes salvos. {vis.RESET}")
+        else:
+            print(f"{vis.BOLD}Lembretes ativos:{vis.RESET}")
+            for i, lembrete in enumerate(usuario.lembretes, 1):
+                if isinstance(lembrete, dict):
+                    print(f"🔔 {lembrete.get('data', '')} - {lembrete.get('conta', '')}")
+                else:
+                    print(f" 🔔 {lembrete.data} - {lembrete.conta}")
+            print("-" * 50)
+        print("\n [1] Adicionar Novo Lembrete")
+        print("\n [0] Sair")
+        opcao = input("\nEscolha uma opção: ").strip()
+        if opcao == 1:
 
-    def tela_adicionar_meta(self, usuario: Usuario):
-        vis.exibir_cabecalho("NOVA META")
-        objetivo = input("Qual o objetivo (Ex: Comprar notebook): ")
-        try:
-            valor = float(input("Qual o valor necessário: "))
-            self.finance_service.adicionar_meta(usuario, objetivo, valor)
-            print(f"\n{vis.GREEN}Meta registrada! Continue evoluindo.{vis.RESET}")
-        except ValueError:
-            print(f"\n{vis.RED}Erro: Valor inválido.{vis.RESET}")
-        input("\nPressione Enter para voltar...")
+            conta = input("Nome da conta (Ex: Luz, Internet): ")
+            data = input("Data de vencimento (DD/MM/AAAA): ")
+            self.finance_service.adicionar_lembrete(usuario, conta, data)
+            print(f"\n{vis.GREEN}Lembrete salvo com sucesso!{vis.RESET}")
+            input("\nPressione Enter para voltar...")
+
+    def tela_metas(self, usuario: Usuario):
+        vis.exibir_cabecalho("MINHAS METAs FINANCEIRAS")
+        if not hasattr(usuario, 'metas') or not usuario.metas:
+            print(f"{vis.RED}Você ainda não possui nenhuma meta cadastrada. {vis.RESET}")
+        else:
+            print(f"{vis.BOLD}Suas Metas Ativas:{vis.RESET}")
+            for i, meta in enumerate(usuario.metas, 1):
+                if isinstance(meta, dict):
+                    print(f"{i}. {meta.get('Objetivo', 'Sem nome')} | Alvo: R$ {meta.get('valor', 0.0)}")
+                else:
+                    print(f"{i}. {meta.objetivo} | Alvo: R$ {meta.valor}")
+            print("-" * 50)
+
+        print("\n [1] Adicionar Nova Meta")
+        print("\n [0] Voltar")
+        
+        opcao = input("\nEscolha uma opção").strip()
+
+        if opcao == 1:
+            objetivo = input("Qual o objetivo (Ex: Comprar notebook): ")
+            try:
+                valor = float(input("Qual o valor necessário: "))
+                self.finance_service.adicionar_meta(usuario, objetivo, valor)
+                print(f"\n{vis.GREEN}Meta registrada! Continue evoluindo.{vis.RESET}")
+            except ValueError:
+                print(f"\n{vis.RED}Erro: Valor inválido.{vis.RESET}")
+            input("\nPressione Enter para voltar...")
 
     def tela_educacao(self, usuario: Usuario):
         vis.exibir_cabecalho("ÁREA DE EDUCAÇÃO - EASY FINANCE")
@@ -189,7 +221,7 @@ class TerminalView:
         print(" [00] Voltar ao Menu Anterior")
         
         opcao = input("\nDigite o número do curso que deseja assistir: ").strip()
-        opcao_normalizada = str(int(opcao)) if opcao.isdigit() else option
+        opcao_normalizada = str(int(opcao)) if opcao.isdigit() else opcao
 
         if opcao_normalizada == 0:
             return

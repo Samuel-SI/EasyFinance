@@ -3,10 +3,10 @@ import os
 from utils.visual import (
     BOLD, GREEN, RED, YELLOW, BLUE, CYAN, WHITE, RESET, 
     exibir_cabecalho, limpar_tela, formatar_moeda)
-from src.finance_engine import registrar_transacao, exibir_alertas, exibir_diagnostico, gerar_relatorio_mensal
-from src.Courses import exibir_cursos
-from src.goals import gerenciar_metas
-from src.database import carregar_sessao_usuario, salvar_dados_usuario, salvar_todo_o_db, carregar_todo_o_db
+from legado.finance_engine import registrar_transacao, exibir_alertas, exibir_diagnostico, gerar_relatorio_mensal
+from legado.Courses import exibir_cursos
+from legado.goals import gerenciar_metas
+from legado.database import carregar_sessao_usuario, salvar_dados_usuario, salvar_todo_o_db, carregar_todo_o_db
 from src.utils.validators import validar_email
 
 def configurar_perfil(usuario_logado):
@@ -73,7 +73,7 @@ def menu_principal(usuario_logado):
         print(f" 💰 Saldo Atual: {cor_saldo}{formatar_moeda(saldo)}{RESET}")
         print(f"{'-'*50}\n")
 
-        print("="*30)
+        
         print(f"{GREEN}1-{RESET}💵 Registrar Entrada/Saída")
         print(f"{YELLOW}2-{RESET}⚠️ Alertas de Vencimento")
         print(f"{BLUE}3-{RESET}📊 Diagnóstico Financeiro")
@@ -81,8 +81,9 @@ def menu_principal(usuario_logado):
         print(f"{CYAN}5-{RESET}📚 Aba de Cursos")
         print(f"{CYAN}6-{RESET}🎯 Aba de Metas")
         print(f"{RED}7-{RESET}Configurações de Perfil")
+        print("="*50)
         print(f"{RED}0-{RESET}Encerrar Sessão (Logout)")
-        print("="*30)
+        
 
         escolha = input(F"\n{BOLD}Escolha uma opção: {RESET}")
 

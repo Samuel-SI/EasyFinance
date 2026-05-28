@@ -2,7 +2,7 @@
 import re
 
 from src.utils.validators import validar_email
-from src.database import carregar_todo_o_db, salvar_todo_o_db
+from legado.database import carregar_todo_o_db, salvar_todo_o_db
 
 def fazer_login():
     """ Realiza a autenticação do usuário consultando o banco de dados JSON """

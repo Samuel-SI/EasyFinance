@@ -12,11 +12,11 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'src')))
 
 # --- IMPORTAÇÃO DE MÓDULOS INTERNOS ---
-from src.auth import fazer_login
+from legado.auth import fazer_login
 from src.utils.validators import realizar_cadastro
-from src.interface import menu_principal
-from src.database import obter_listas_autenticacao, cadastrar_novo_usuario, inicializar_banco
-from src.security import verificar_2fa
+from legado.interface import menu_principal
+from legado.database import obter_listas_autenticacao, cadastrar_novo_usuario, inicializar_banco
+from legado.security import verificar_2fa
 from src.utils.visual import exibir_cabecalho, BOLD, RED, GREEN, BLUE, RESET, limpar_tela
   
 # --- INICIALIZAÇÃO DE DADOS (PERSISTÊNCIA) ---

@@ -39,18 +39,19 @@ def gerenciar_metas(metas):
             print("\n--- MINHAS METAS ---")
             # Validação: verifica se a lista está vazia antes de tentar iterar
             if not metas:
-                print("📭 Nenhuma meta cadastrada ainda.")
+                print(f"\n{YELLOW}📭 Nenhuma meta cadastrada ainda.{RESET}")
             else:
+                print(f"\n{BOLD}{'ID':<4}| {'OBJETIVO':<20} | {'VALOR (R$)':>12}{RESET}")
+                print(f"{'-'*40}")
                 # O uso de enumerate(metas, 1) permite criar uma lista numerada
                 # automaticamente para o usuário final a partir do índice 1.
                 for i, m in enumerate(metas, 1):
                     # Verificação defensiva: garante que o item atual é um dicionário
                     # para evitar erros de acesso a chaves inexistentes.
                     if isinstance(m, dict):
-                        print(f"{i}. {m['objetivo']} - R$ {m['valor']}")
-                    else:
-                        # Ignora registros corrompidos ou em formatos antigos (legacy data)
-                        continue
+                        print(f"{i:<4} | {m['objetivo']:<20} | R$ {float(m['valor']):>10.2f}")
+                print("-" * 40)
+                        # Ignora registros corrompidos ou em formatos antigos (legacy de string)
             input("\nPressione Enter para continuar...")
 
         elif escolha == "0":
