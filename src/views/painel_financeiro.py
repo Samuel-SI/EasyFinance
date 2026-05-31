@@ -4,6 +4,7 @@ from tkinter import messagebox
 from src.views.core_window import CoreWindow
 from src.views.aba_investimentos import AbaInvestimentos
 from src.services.finance_service import FinanceService
+from src.services.investment_service import InvestmentService 
 from src.utils.tradutor import Tradutor as _
 
 class PainelFinanceiro(CoreWindow):
@@ -13,6 +14,15 @@ class PainelFinanceiro(CoreWindow):
 
         # Inicializa o serviço financeiro corretamente
         self.finance_service = FinanceService(self.auth_service.repo)
+
+        # Inicializa o letreiro de jornal usando f-string 
+        self.investment_service = InvestmentService()
+
+        cotacoes = self.investment_service.obter_cotacao_moedas()
+        self.texto_letreiro = f"Dólar: {cotacoes['USD']} | Euro: {cotacoes['EUR']} | Bitcoin: {cotacoes['BTC']} | Ethereum: {cotacoes['ETH']}    +++    "
+        self.label_letreiro = ctk.CTkLabel(content, self.texto_letreiro)
+        self.label_letreiro.pack(fill="x", pady=5)
+        self.animar_letreiro() 
 
         content = ctk.CTkFrame(self.janela, fg_color="transparent")
         content.pack(side="right", fill="both", expand=True, padx=30, pady=30)
@@ -263,3 +273,9 @@ class PainelFinanceiro(CoreWindow):
             usuario_atual=self.usuario_atual
         )
         aba_investimentos.pack(fill="both", expand=True)
+    
+    # Cria o método para o letreiro animado funcionar 
+    def animar_letreiro(self): 
+        self.texto_letreiro = self.texto_letreiro[1:] + self.texto_letreiro[0] 
+        self.label_letreiro.configure(text=self.texto_letreiro)
+        self.janela.after(100, self.animar_letreiro) 

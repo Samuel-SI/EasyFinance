@@ -15,14 +15,16 @@ class InvestmentService:
 
     def obter_cotacao_moedas(self):
         """Busca a cotação atualizada do Dólar e Euro em tempo real via API nativa"""
-        url = "https://economia.awesomeapi.com.br/last/USD-BRL,EUR-BRL"
+        url = "https://economia.awesomeapi.com.br/last/USD-BRL,EUR-BRL,BTC-BRL,ETH-BRL" # .
         try:
             with urllib.request.urlopen(url, timeout=5) as response:
                 dados = json.loads(response.read().decode())
 
                 cotacoes = {
                     "USD": float(dados["USDBRL"]["bid"]),
-                    "EUR": float(dados["EURBRL"]["bid"])
+                    "EUR": float(dados["EURBRL"]["bid"]),
+                    "BTC": float(dados["BTCBRL"]["bid"]), # .
+                    "ETH": float(dados["ETHBRL"]["bid"]) # .
                 }
                 return cotacoes
         except Exception as e:
