@@ -12,20 +12,26 @@ class PainelFinanceiro(CoreWindow):
         self.limpar_janela()
         self.desenhar_menu_lateral(_.t("painel_principal"))
 
-        # Inicializa o serviço financeiro corretamente
-        self.finance_service = FinanceService(self.auth_service.repo)
-
-        # Inicializa o letreiro de jornal usando f-string 
-        self.investment_service = InvestmentService()
-
-        cotacoes = self.investment_service.obter_cotacao_moedas()
-        self.texto_letreiro = f"Dólar: {cotacoes['USD']} | Euro: {cotacoes['EUR']} | Bitcoin: {cotacoes['BTC']} | Ethereum: {cotacoes['ETH']}    +++    "
-        self.label_letreiro = ctk.CTkLabel(content, self.texto_letreiro)
-        self.label_letreiro.pack(fill="x", pady=5)
-        self.animar_letreiro() 
-
+        # 1. Primeiro criamos o container visual 'content' para poder colocar elementos dentro dele
         content = ctk.CTkFrame(self.janela, fg_color="transparent")
         content.pack(side="right", fill="both", expand=True, padx=30, pady=30)
+
+        # 2. Inicializa o serviço financeiro corretamente
+        self.finance_service = FinanceService(self.auth_service.repo)
+
+        # 3. CORREÇÃO AQUI: Inicializa o serviço de investimentos PASSANDO o repositório exigido!
+        self.investment_service = InvestmentService(self.auth_service.repo)
+
+        # 4. Busca as cotações e cria o letreiro animado
+        cotacoes = self.investment_service.obter_cotacao_moedas()
+        if cotacoes:
+            self.texto_letreiro = f"Dólar: {cotacoes['USD']} | Euro: {cotacoes['EUR']} | Bitcoin: {cotacoes['BTC']} | Ethereum: {cotacoes['ETH']}    +++    "
+        else:
+            self.texto_letreiro = "Cotações Indisponíveis (Modo Offline)    +++    "
+            
+        self.label_letreiro = ctk.CTkLabel(content, text=self.texto_letreiro) # Corrigido para receber o texto
+        self.label_letreiro.pack(fill="x", pady=5)
+        self.animar_letreiro() 
 
         # Renderização do banner do RF021
         self.renderizar_alertas_dashboard(content)
