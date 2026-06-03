@@ -110,14 +110,14 @@ A organização adota os preceitos de Engenharia de Software baseados em separa�
     ├── views/                 # Componentes visuais, Frames e CustomWidgets do CustomTkinter
     ├── utils/                 # Scripts auxiliares e formatadores de strings
     └── legado/                # Módulos históricos originais construídos via Terminal na Unidade 1
+```
 
-
-🚀 Guia de Instalação e Execução
+## 🚀 Guia de Instalação e Execução
 📋 Pré-requisitos
 Ter o Python instalado em seu computador (Versão 3.10 ou superior recomendada).
 Conexão ativa com a internet (necessária para as cotações de moedas ao vivo e o envio de e-mails do 2FA).
 
-🛠️ Passo a Passo para Execução
+## 🛠️ Passo a Passo para Execução
 Siga os comandos abaixo no seu terminal para baixar, configurar e rodar o projeto localmente:
 
 Clone este repositório do GitHub:
@@ -147,8 +147,8 @@ Instale a biblioteca gráfica necessária para a interface rodar:
 Inicie a aplicação:
 ```bash
     python main.py
-
-##⚙️ Workflow do Git (Versionamento):
+```
+## ⚙️ Workflow do Git (Versionamento):
 Para assegurar o desenvolvimento síncrono limpo e evitar conflitos destrutivos durante a integração do código, a dupla adotou o fluxo de trabalho baseado em Feature Branches:
 
 Branch main: Retém exclusivamente o código estável, homologado e pronto para apresentação.
@@ -172,8 +172,8 @@ Após finalizar as alterações no código, adicione e envie para o GitHub:
     git commit -m "feat: adiciona descricao clara da funcionalidade"
     git push origin feat/nome-da-sua-funcionalidade
     Integração: Abra um Pull Request no GitHub para que a dupla revise o código antes de juntar as alterações na branch main.
-
-##🔗 Links e Recursos Extras##
+```
+## 🔗 Links e Recursos Extras##
 📂 Documentação Complementar: Acesse todos os relatórios estruturados, diagramas e notas de planejamento na Pasta do Projeto no Google Drive.
 
 📦 Repositório Oficial: Acompanhe o histórico de atualizações e releases na página principal do EasyFinance no GitHub.
