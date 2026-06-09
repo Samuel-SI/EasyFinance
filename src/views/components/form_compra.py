@@ -84,7 +84,7 @@ class FormCompraAtivos(ctk.CTkFrame):
             if not hasattr(self.usuario_atual, 'transacoes') or self.usuario_atual.transacoes is None: self.usuario_atual.transacoes = []
             self.usuario_atual.transacoes.append({"tipo": "Despesa", "descricao": f"Investimento: {quantidade:.2f} {ticker}", "valor": total_investimento, "data": datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
 
-            self.service.repository.salvar_usuario(self.usuario_atual)
+            self.service.repo.salvar_usuario(self.usuario_atual)
             self.txt_qtd.delete(0, 'end')
             self.vincular_preco_api(ticker)
             self.recarregar_carteira()

@@ -107,14 +107,41 @@ class AbaInvestimentos(ctk.CTkFrame):
             messagebox.showinfo(_.t("sugestao_rebal_tit"), f"💡 Recomendação: Aporte em {sugestao} (Atual: USD {p_usd:.1f}% / EUR {(100-p_usd):.1f}%)")
 
     def exportar_relatorio(self):
-        """[RF022] Geração e despacho SMTP do relatório."""
+        """[RF022] Geração e despacho SMTP do relatório com suporte a OneDrive."""
+        import os
+        import tkinter.messagebox as messagebox
+
+        # 1. Tenta o caminho padrão do Desktop local
         desktop = os.path.join(os.path.expanduser("~"), "Desktop")
         caminho = os.path.join(desktop, "Relatorio_Patrimonial.txt")
-        with open(caminho, "w", encoding="utf-8") as f: f.write(f"Relatório de {getattr(self.usuario_atual, 'username', 'User')}\n")
         
-        if messagebox.askyesno(_.t("relatorio_gerado_tit"), f"Salvo no Desktop. Enviar para {getattr(self.usuario_atual, 'email')}?"):
-            self.btn_exportar.configure(text=_.t("btn_enviando_email"), state="disabled")
-            self.update_idletasks()
-            self.service.enviar_relatorio_por_email(self.usuario_atual, caminho)
+        # 2. Verificação de Segurança (Se o Desktop padrão não existir devido ao OneDrive)
+        if not os.path.exists(desktop):
+            # Tenta encontrar a pasta Desktop gerenciada pelo OneDrive
+            desktop_onedrive = os.path.join(os.path.expanduser("~"), "OneDrive", "Desktop")
+            if os.path.exists(desktop_onedrive):
+                caminho = os.path.join(desktop_onedrive, "Relatorio_Patrimonial.txt")
+            else:
+                # Caso extremo: se nenhum Desktop for achado, salva na pasta atual do projeto
+                caminho = "Relatorio_Patrimonial.txt"
+
+        try:
+            # 3. Cria e escreve no arquivo de forma segura
+            with open(caminho, "w", encoding="utf-8") as f: 
+                f.write(f"Relatório de {getattr(self.usuario_atual, 'username', 'User')}\n")
+            
+            # 4. Mantém toda a sua lógica impecável de envio por e-mail e tradução
+            if messagebox.askyesno(_.t("relatorio_gerado_tit"), f"Salvo com sucesso. Enviar para {getattr(self.usuario_atual, 'email')}?"):
+                self.btn_exportar.configure(text=_.t("btn_enviando_email"), state="disabled")
+                self.update_idletasks()
+                
+                # Executa o envio através do serviço
+                self.service.enviar_relatorio_por_email(self.usuario_atual, caminho)
+                
+                self.btn_exportar.configure(text=_.t("btn_exportar_rel"), state="normal")
+                messagebox.showinfo(_.t("sucesso"), _.t("msg_email_enviado"))
+                
+        except Exception as e:
+            # Garante que o botão volte ao normal caso ocorra qualquer outro erro imprevisto
             self.btn_exportar.configure(text=_.t("btn_exportar_rel"), state="normal")
-            messagebox.showinfo(_.t("sucesso"), _.t("msg_email_enviado"))
+            messagebox.showerror("Erro", f"Não foi possível gerar ou salvar o relatório: {e}")
