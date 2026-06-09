@@ -174,6 +174,6 @@ Após finalizar as alterações no código, adicione e envie para o GitHub:
     Integração: Abra um Pull Request no GitHub para que a dupla revise o código antes de juntar as alterações na branch main.
 ```
 ## 🔗 Links e Recursos Extras##
-📂 Documentação Complementar: Acesse todos os relatórios estruturados, diagramas e notas de planejamento na Pasta do Projeto no Google Drive. 
+📂 Documentação Complementar: Acesse todos os relatórios estruturados, diagramas e notas de planejamento na Pasta do Projeto no Google Drive. Link: https://drive.google.com/drive/folders/1uMGCmA65ttfMUauCV8W2FB3zsOHRkhdF
 
 📦 Artigo do Overleaf: Entenda o processo todo em um artigo científico pelo link: https://www.overleaf.com/project/6a047b8469358960a21c5d65

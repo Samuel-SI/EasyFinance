@@ -66,6 +66,19 @@ class InvestmentService:
         Implementação do RF021 - Exportação de Relatório de Desempenho Patrimonial.
         Gera um arquivo .txt formatado na Área de Trabalho do usuário.
         """
+        # =====================================================================
+        # CORREÇÃO CRÍTICA: Força o recarregamento dos investimentos do SQLite
+        # =====================================================================
+        from src.repository.sqlite_repo import SqliteRepository
+        try:
+            repo_banco = SqliteRepository()
+            usuario_atualizado = repo_banco.buscar_usuario_por_email(usuario.email)
+            if usuario_atualizado and hasattr(usuario_atualizado, 'investimentos'):
+                usuario.investimentos = usuario_atualizado.investimentos
+        except Exception as e:
+            print(f"Aviso ao carregar dados do SQLite: {e}")
+        # =====================================================================
+
         if not hasattr(usuario, 'investimentos') or not usuario.investimentos:
             return False, "O usuário não possui ativos para exportar."
             
@@ -150,7 +163,7 @@ class InvestmentService:
             msg['To'] = destinatario
             msg['Subject'] = "📊 Seu Relatório Patrimonial Consolidado - EasyFinance"
 
-            # 2. Constrói o corpo do e-mail com estrutura HTML premium
+            # 2. Constrói o corpo do e-mail com estrutura HTML 
             corpo_html = f"""
             <html>
                 <body style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
@@ -171,9 +184,15 @@ class InvestmentService:
                 with open(caminho_arquivo, "rb") as f_anexo:
                     nome_exibicao = os.path.basename(caminho_arquivo)
                     
-                    # MIMEApplication configura automaticamente as propriedades ideais para arquivos PDF
-                    anexo = MIMEApplication(f_anexo.read(), Name=nome_exibicao)
-                    anexo['Content-Disposition'] = f'attachment; filename="{nome_exibicao}"'
+                    # Usamos MIMEBase para garantir controle total do transporte do arquivo
+                    from email.mime.base import MIMEBase
+                    from email import encoders
+                    
+                    anexo = MIMEBase('application', 'octet-stream')
+                    anexo.set_payload(f_anexo.read())
+                    encoders.encode_base64(anexo) # ISSO impede o anexo de virar texto quebrado
+                    
+                    anexo.add_header('Content-Disposition', f'attachment; filename="{nome_exibicao}"')
                     msg.attach(anexo)
             else:
                 return False, "Arquivo de relatório não foi localizado para o anexo."
@@ -182,7 +201,7 @@ class InvestmentService:
             server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
             server.starttls()
             server.login(EMAIL_REMETENTE, SENHA_REMETENTE)
-            server.sendmail(EMAIL_REMETENTE, destinatario, msg.as_string())
+            server.sendmail(EMAIL_REMETENTE, destinatario, msg.as_bytes()) 
             server.quit()
 
             return True, "E-mail enviado com sucesso!"

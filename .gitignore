@@ -29,5 +29,4 @@ Relatorio_Investimentos_*.txt
 # Remover do Git (Não exibir no GitHub)
 # ==========================================
 src/legado/
-src/models/
 src/locales/
