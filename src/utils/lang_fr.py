@@ -137,5 +137,6 @@ TEXTOS_FR = {
     "concluido": "Terminé",
     "msg_relatorio_disp": "Le rapport est disponible à :",
     "erro_exportacao_tit": "Erreur d'Exportation",
-    "msg_aguarde_api": "Veuillez patienter pendant le chargement des cotations de l'API."
+    "msg_aguarde_api": "Veuillez patienter pendant le chargement des cotations de l'API.",
+    "msg_adicional": "⚠️ Attention : Comme la date indiquée est déjà passée, le rappel a été marqué comme « Expiré » et une amende de R$ {VALOR_MULTA:.2f} a été débitée de votre solde !"
 }

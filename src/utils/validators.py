@@ -1,5 +1,6 @@
 # src/validators.py
 import re
+from datetime import datetime
 def validar_email(email):
     regex_email = r'^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$'
     if re.match(regex_email, email.lower()):
@@ -83,3 +84,14 @@ def realizar_cadastro(emails_cadastrados, cpfs_cadastrados):
     
     # Retorna os dados validados para o loop principal
     return email, senha, cpf_cnpj 
+
+def validar_data(data_str):
+    """Retorna True e o objeto datetime se a data for válida, senão False e None."""
+    formatos = ["%D/%m/%Y", "%d/%m/%y"]
+    for formato in formatos:
+        try:
+            data_objeto = datetime.strptime(data_str, formato)
+            return True, data_objeto
+        except ValueError:
+            continue
+    return False, None 

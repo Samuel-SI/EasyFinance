@@ -8,11 +8,24 @@ from src.services.investment_service import InvestmentService
 from src.utils.tradutor import Tradutor as _
 
 class PainelFinanceiro(CoreWindow):
+    
+    def formatar_moeda(self, valor):
+        """Converte um número float/int para o padrão monetário brasileiro (Ex: 1920000.00 -> 1.920.000,00)"""
+        try:
+            # Formata primeiro com separadores internacionais: 1,920,000.00
+            texto = f"{float(valor):,.2f}"
+            # Inverte os separadores de maneira segura para o padrão BR
+            placeholder = texto.replace(",", "X")
+            com_pontos = placeholder.replace(".", ",")
+            return com_pontos.replace("X", ".")
+        except (ValueError, TypeError):
+            return str(valor)
+
     def tela_dashboard(self):
         self.limpar_janela()
         self.desenhar_menu_lateral(_.t("painel_principal"))
 
-        # 1. Primeiro criamos o container visual 'content' para poder colocar elementos dentro dele
+        # 1. Primeiro criamos o container visual 'content' para poder colocar elements dentro dele
         content = ctk.CTkFrame(self.janela, fg_color="transparent")
         content.pack(side="right", fill="both", expand=True, padx=30, pady=30)
 
@@ -46,9 +59,10 @@ class PainelFinanceiro(CoreWindow):
         financas_frame = ctk.CTkFrame(content, fg_color="transparent")
         financas_frame.pack(fill="x", pady=10)
 
-        self.criar_card(financas_frame, _.t("saldo_atual"), f"R$ {saldo_atual:.2f}", "#2ecc71" if saldo_atual >= 0 else "#e74c3c")
-        self.criar_card(financas_frame, _.t("receitas_mes"), f"R$ {total_receitas:.2f}", self.COR_PRINCIPAL)
-        self.criar_card(financas_frame, _.t("despesas_mes"), f"R$ {total_despesas:.2f}", "#e74c3c")
+        # CORREÇÃO: Valores dos cards principais formatados em padrão BR
+        self.criar_card(financas_frame, _.t("saldo_atual"), f"R$ {self.formatar_moeda(saldo_atual)}", "#2ecc71" if saldo_atual >= 0 else "#e74c3c")
+        self.criar_card(financas_frame, _.t("receitas_mes"), f"R$ {self.formatar_moeda(total_receitas)}", self.COR_PRINCIPAL)
+        self.criar_card(financas_frame, _.t("despesas_mes"), f"R$ {self.formatar_moeda(total_despesas)}", "#e74c3c")
 
         # =========================================================================
         # ✨ IMPLEMENTAÇÃO DO REQUISITO RF026: CONTROLE DE TETO DE GASTOS (BUDGETING)
@@ -92,10 +106,10 @@ class PainelFinanceiro(CoreWindow):
                 item_frame = ctk.CTkFrame(budget_scroll, fg_color="transparent")
                 item_frame.pack(fill="x", padx=10, pady=6)
 
-                # Rótulos informativos
+                # CORREÇÃO: Valores do teto de gastos formatados em padrão BR
                 lbl_info = ctk.CTkLabel(
                     item_frame, 
-                    text=f"{categoria.upper()} — R$ {total_gasto:.2f} / R$ {TETO_PADRAO:.2f} ({percentagem * 100:.1f}%)",
+                    text=f"{categoria.upper()} — R$ {self.formatar_moeda(total_gasto)} / R$ {self.formatar_moeda(TETO_PADRAO)} ({percentagem * 100:.1f}%)",
                     font=("Roboto", 13, "bold"),
                     text_color=self.TEXT_MAIN
                 )
@@ -134,10 +148,11 @@ class PainelFinanceiro(CoreWindow):
             self.frame_alerta_rf021 = ctk.CTkFrame(parent_frame, fg_color=("#FFFBEB", "#78350F"), corner_radius=8, border_width=1, border_color="#F59E0B")
             self.frame_alerta_rf021.pack(fill="x", pady=(0, 20))
 
+            # CORREÇÃO: Valores numéricos do banner de alertas convertidos para o formato BR
             texto_aviso = (
-                f"⚠️ {_.t('alerta_oportunidade_1', 'Alerta de Custo de Oportunidade: Sua empresa possui')} R$ {dados_alerta['saldo']:.2f} {_.t('alerta_oportunidade_2', 'parados em caixa.')} "
-                f"{_.t('alerta_oportunidade_3', 'Investir o excesso')} (R$ {dados_alerta['excesso']:.2f}) {_.t('alerta_oportunidade_4', 'evitaria uma perda estimada de')} "
-                f"R$ {dados_alerta['perda_mensal_estimada']:.2f}/mês."
+                f"⚠️ {_.t('alerta_oportunidade_1', 'Alerta de Custo de Oportunidade: Sua empresa possui')} R$ {self.formatar_moeda(dados_alerta['saldo'])} {_.t('alerta_oportunidade_2', 'parados em caixa.')} "
+                f"{_.t('alerta_oportunidade_3', 'Investir o excesso')} (R$ {self.formatar_moeda(dados_alerta['excesso'])}) {_.t('alerta_oportunidade_4', 'evitaria uma perda estimada de')} "
+                f"R$ {self.formatar_moeda(dados_alerta['perda_mensal_estimada'])}/mês."
             )
             
             lbl_aviso = ctk.CTkLabel(
@@ -194,7 +209,8 @@ class PainelFinanceiro(CoreWindow):
                 sinal = "+" if tipo == "Receita" else "-"
                 
                 ctk.CTkLabel(t_frame, text=f"{desc}", font=("Roboto", 14, "bold"), text_color=self.TEXT_MAIN).pack(side="left", padx=15, pady=10)
-                ctk.CTkLabel(t_frame, text=f"{sinal} R$ {float(valor):.2f}", text_color=cor, font=("Roboto", 14, "bold")).pack(side="right", padx=15, pady=10)
+                # CORREÇÃO: Lista de transações do histórico formatada em padrão BR
+                ctk.CTkLabel(t_frame, text=f"{sinal} R$ {self.formatar_moeda(valor)}", text_color=cor, font=("Roboto", 14, "bold")).pack(side="right", padx=15, pady=10)
 
         right_col = ctk.CTkFrame(content, width=220, fg_color=self.CARD_BG)
         right_col.pack(side="right", fill="y")
@@ -280,8 +296,7 @@ class PainelFinanceiro(CoreWindow):
         )
         aba_investimentos.pack(fill="both", expand=True)
     
-    # Cria o método para o letreiro animado funcionar 
     def animar_letreiro(self): 
         self.texto_letreiro = self.texto_letreiro[1:] + self.texto_letreiro[0] 
         self.label_letreiro.configure(text=self.texto_letreiro)
-        self.janela.after(100, self.animar_letreiro) 
+        self.janela.after(100, self.animar_letreiro)

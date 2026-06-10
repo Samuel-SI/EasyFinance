@@ -4,6 +4,7 @@ import webbrowser
 from tkinter import messagebox
 from src.views.core_window import CoreWindow
 from src.utils.tradutor import Tradutor as _
+from datetime import datetime
 
 class ModulosSuporte(CoreWindow):
     def tela_educacao(self):
@@ -181,9 +182,16 @@ class ModulosSuporte(CoreWindow):
                 
                 conta = l.get('conta', 'Conta') if isinstance(l, dict) else getattr(l, 'conta', 'Conta')
                 data = l.get('data', '--/--/----') if isinstance(l, dict) else getattr(l, 'data', '--/--/----')
-                
+                status = l.get('status', 'Pendente') if isinstance(l, dict) else getattr(l, 'status', 'Pendente')
                 lbl_conta = ctk.CTkLabel(l_frame, text=f"📋 {conta}", font=("Roboto", 16, "bold"), text_color=self.TEXT_MAIN, anchor="w")
                 lbl_conta.pack(fill="x", padx=15, pady=(12, 2))
+                
+                if status == "Vencida":
+                    texto_data = f"⚠️ Vencida em: {data}"
+                    cor_texto = "#E74C3C"
+                else:
+                    texto_data = f"📅 {_.t('vence_em')}: {data}"
+                    cor_texto = ("#D35400", "#E67E22")
                 
                 lbl_data = ctk.CTkLabel(l_frame, text=f"📅 {_.t('vence_em')}: {data}", font=("Roboto", 13), text_color=("#D35400", "#E67E22"), anchor="w")
                 lbl_data.pack(fill="x", padx=15, pady=(0, 12))
@@ -205,21 +213,75 @@ class ModulosSuporte(CoreWindow):
     def salvar_lembrete_gui(self):
         conta = self.entry_lembrete_conta.get().strip()
         data = self.entry_lembrete_data.get().strip()
-        
+    
+    # Validação de campos vazios
         if not conta or not data:
             return messagebox.showwarning(_.t("aviso"), _.t("msg_preencha_campos"))
-            
+    
+    # 1. VALIDAÇÃO DE FORMATO DA DATA
+        try:
+        # Tenta converter o texto em uma data válida real
+            data_validada = datetime.strptime(data, "%d/%m/%Y").date()
+        except ValueError:
+            return messagebox.showerror(
+                _.t("Erro") if hasattr(_, 't') else "Erro",
+                "Formato de data inválido! Por favor, insira no formato DD/MM/AAAA (Ex: 18/05/2026)."
+            )
+        hoje = datetime.today().date()
+        status = "Pendente"
+        msg_adicional = ""
+
+        if data_validada < hoje:
+            status = "Vencida"
+
+            VALOR_MULTA = 15.00
+
+            if hasattr(self.finance_service, 'adicionar_transacao'):
+                try:
+                    self.finance_service.adicionar_transacao(
+                        self.usuario_atual,
+                        "SAÍDA",  # Tipo compatível com o filtro de saldo do seu Usuario model
+                        VALOR_MULTA,
+                        "Multas",
+                        f"Multa automática: Lembrete '{conta}' criado já vencido.",
+                        hoje.strftime("%d/%m/%Y")
+                    )
+                except Exception:
+                    pass
+            else:
+                from src.models.transacao import transacao
+                nova_multa = transacao(
+                    tipo="SAÍDA", 
+                    valor=VALOR_MULTA, 
+                    descricao=f"Multa automática: Lembrete '{conta}' criado já vencido.", 
+                    data=hoje.strftime("%d/%m/%Y")
+                )
+                self.usuario_atual.transacoes.append(nova_multa)
+
+            msg_adicional = _.t(f"\n\n⚠️ Atenção: Como a data informada já passou, o lembrete foi marcado como 'Vencido' e uma multa de R$ {VALOR_MULTA:.2f} foi debitada do seu saldo!")
+
         if hasattr(self.finance_service, 'adicionar_lembrete'):
-            self.finance_service.adicionar_lembrete(self.usuario_atual, conta, data)
+            try:
+                self.finance_service.adicionar_lembrete(self.usuario_atual, conta, data)
+            except TypeError:
+                self.finance_service.adicionar_lembrete(self.usuario_atual, conta, data)
+                if hasattr(self.usuario_atual, 'lembretes') and self.usuario_atual.lembretes:
+                    ultimo = self.usuario_atual.lembretes[-1]
+                    if isinstance(ultimo, dict):
+                        ultimo['status'] = status
+                else:
+                    setattr(ultimo, 'status', status)
         else:
             if not hasattr(self.usuario_atual, 'lembretes'):
                 self.usuario_atual.lembretes = []
-            self.usuario_atual.lembretes.append({"conta": conta, "data": data})
+            self.usuario_atual.lembretes.append({"conta": conta, "data": data, "status": status})
             self.auth_service.repo.salvar_usuario(self.usuario_atual)
-            
-        messagebox.showinfo(_.t("sucesso"), _.t("msg_lembrete_add"))
-        self.tela_lembretes()
+        messagebox.showinfo(_.t("sucesso"), _.t("msg_lembrete_add") + msg_adicional)
+        self.entry_lembrete_conta.delete(0, 'end')
+        self.entry_lembrete_data.delete(0, 'end')
 
+        self.tela_lembretes()
+        
     def tela_perfil(self):
         self.limpar_janela()
         self.desenhar_menu_lateral(_.t("editar_perfil"))

@@ -137,5 +137,6 @@ TEXTOS_ES = {
     "concluido": "Completado",
     "msg_relatorio_disp": "El informe está disponible en:",
     "erro_exportacao_tit": "Error de Exportación",
-    "msg_aguarde_api": "Espere a que carguen las cotizaciones de la API."
+    "msg_aguarde_api": "Espere a que carguen las cotizaciones de la API.",
+    "msg_adicional": "⚠️ Atención: Como la fecha informada ya pasó, el recordatorio ha sido marcado como 'Vencido' e una multa de R$ {VALOR_MULTA:.2f} ha sido debitada de su saldo!"
 }

@@ -137,5 +137,6 @@ TEXTOS_EN = {
     "concluido": "Completed",
     "msg_relatorio_disp": "The report is available at:",
     "erro_exportacao_tit": "Export Error",
-    "msg_aguarde_api": "Please wait for API quotes to load."
+    "msg_aguarde_api": "Please wait for API quotes to load.",
+    "msg_adicional": "⚠️ Attention: Since the date provided has already passed, the reminder has been marked as 'Overdue' and a fine of R$ {VALOR_MULTA:.2f} has been deducted from your balance!"
 }

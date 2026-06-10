@@ -50,3 +50,23 @@ def exibir_tabela_financeira(transacoes):
 
         print(f"{cor_linha}{desc:<25}{RESET}|{valor:<15}|{tipo:<10}|{data:<10}")
         print(f"{BOLD}{'-'*65}{RESET}")
+
+
+def formatar_moeda(valor):
+    """
+    Converte um número float/int para o padrão monetário brasileiro (Ex: 1920000.00 -> 1.920.000,00)
+    """
+    try:
+        valor_float = float(valor)
+        # Formata primeiro no padrão internacional com vírgulas temporárias: 1,920,000.00
+        texto_formatado = f"{valor_float:,.2f}"
+        
+        # Inverte os separadores para o formato brasileiro
+        placeholder = texto_formatado.replace(",", "X")
+        com_pontos = placeholder.replace(".", ",")
+        resultado_final = com_pontos.replace("X", ".")
+        
+        return resultado_final
+    except (ValueError, TypeError):
+        # Caso receba algo que não seja número, retorna o valor original limpo
+        return str(valor)

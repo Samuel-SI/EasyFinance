@@ -137,5 +137,6 @@ TEXTOS_PT = {
     "concluido": "Concluído",
     "msg_relatorio_disp": "O relatório está disponível em:",
     "erro_exportacao_tit": "Erro de Exportação",
-    "msg_aguarde_api": "Aguarde o carregamento das cotações da API."
+    "msg_aguarde_api": "Aguarde o carregamento das cotações da API.", 
+    "msg_adicional": "⚠️ Atenção: Como a data informada já passou, o lembrete foi marcado como 'Vencido' e uma multa de R$ {VALOR_MULTA:.2f} foi debitada do seu saldo!"
 }
